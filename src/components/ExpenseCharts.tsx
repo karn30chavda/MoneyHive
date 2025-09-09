@@ -69,46 +69,35 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-hidden">
-          <ChartContainer config={chartConfig} className="w-full h-[300px]">
+        <CardContent>
+          <ChartContainer config={chartConfig} className="w-full h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value) => formatCurrency(value as number)} />} />
-                <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                    if (percent < 0.05) return null; // Don't render label for small slices
-                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-                    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-                    return (
-                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-bold">
-                        {`${(percent * 100).toFixed(0)}%`}
-                        </text>
-                    );
-                    }}
-                >
-                    {categorySpending.map((_, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Pie>
+                  <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value) => formatCurrency(value as number)} />} />
+                  <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius="30%" strokeWidth={2}>
+                      {categorySpending.map((_, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                  </Pie>
                 </PieChart>
             </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card>
+      <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>Daily Spending (Last 7 Days)</CardTitle>
         </CardHeader>
-        <CardContent className="overflow-hidden">
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickFormatter={(value) => formatCurrency(value as number)} width={80} />
+                <YAxis tickFormatter={(value) => formatCurrency(value as number).split('.')[0]} width={60} />
                 <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)} />} />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
               </BarChart>
