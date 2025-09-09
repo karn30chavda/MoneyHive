@@ -94,6 +94,9 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
+              <SheetHeader>
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+              </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary">
                 <IndianRupee className="h-6 w-6" />
                 <span>PennyPincher</span>
