@@ -39,7 +39,7 @@ export function DataSync() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `pennypincher_expenses_${new Date().toISOString()}.${fileExtension}`;
+    a.download = `ledgerlite_expenses_${new Date().toISOString()}.${fileExtension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

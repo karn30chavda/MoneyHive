@@ -13,7 +13,7 @@ const ptSans = PT_Sans({
 
 
 export const metadata: Metadata = {
-  title: 'PennyPincher PWA',
+  title: 'LedgerLite PWA',
   description: 'A personal expense tracker that works offline.',
   manifest: '/manifest.json',
 };
