@@ -3,17 +3,17 @@
 import { useMemo, useState } from 'react';
 import { useExpenses } from '@/hooks/use-expenses';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, X, IndianRupee } from 'lucide-react';
+import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ExpenseForm } from './ExpenseForm';
-import type { Expense, Category } from '@/types';
+import type { Expense } from '@/types';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -21,6 +21,15 @@ const formatCurrency = (amount: number) => {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
     }).format(amount);
+};
+
+const PaymentModeIcon = ({ mode }: { mode: string }) => {
+    switch (mode) {      
+        case 'UPI': return <Landmark className="h-4 w-4" />;
+        case 'Card': return <CreditCard className="h-4 w-4" />;
+        case 'Cash': return <Wallet className="h-4 w-4" />;
+        default: return <Wallet className="h-4 w-4" />;
+    }
 };
 
 export function ExpenseList() {
@@ -98,35 +107,40 @@ export function ExpenseList() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="overflow-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Amount</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Payment Mode</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredExpenses.length > 0 ? (
-                filteredExpenses.map(expense => (
-                  <TableRow key={expense.id}>
-                    <TableCell className="font-medium">{expense.title}</TableCell>
-                    <TableCell className="flex items-center">
-                        <IndianRupee className="h-4 w-4 mr-1" />
-                        {formatCurrency(expense.amount)}
-                    </TableCell>
-                    <TableCell>{categoryMap.get(expense.categoryId) || 'Uncategorized'}</TableCell>
-                    <TableCell>{format(new Date(expense.date), 'PP')}</TableCell>
-                    <TableCell>{expense.paymentMode}</TableCell>
-                    <TableCell className="text-right">
+        {filteredExpenses.length > 0 ? (
+          <Accordion type="single" collapsible className="w-full">
+            {filteredExpenses.map(expense => (
+              <AccordionItem value={`item-${expense.id}`} key={expense.id}>
+                <AccordionTrigger className="hover:no-underline">
+                  <div className="flex justify-between w-full pr-4">
+                    <span className="font-medium">{expense.title}</span>
+                    <span className="flex items-center font-semibold">
+                      <IndianRupee className="h-4 w-4 mr-1" />
+                      {formatCurrency(expense.amount)}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="px-2 space-y-3">
+                    <div className="flex justify-between text-sm text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <Tag className="h-4 w-4"/>
+                            <span>{categoryMap.get(expense.categoryId) || 'Uncategorized'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                           <Calendar className="h-4 w-4"/>
+                           <span>{format(new Date(expense.date), 'PP')}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <PaymentModeIcon mode={expense.paymentMode}/>
+                           <span>{expense.paymentMode}</span>
+                        </div>
+                    </div>
+                    <div className="flex justify-end gap-2 pt-2">
                        <Dialog open={editingExpense?.id === expense.id} onOpenChange={(isOpen) => !isOpen && setEditingExpense(null)}>
                         <DialogTrigger asChild>
-                          <Button variant="ghost" size="icon" onClick={() => setEditingExpense(expense)}>
-                            <Edit className="h-4 w-4" />
+                          <Button variant="outline" size="sm" onClick={() => setEditingExpense(expense)}>
+                            <Edit className="mr-2 h-4 w-4" /> Edit
                           </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-[625px]">
@@ -139,8 +153,8 @@ export function ExpenseList() {
 
                       <AlertDialog>
                         <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive">
-                            <Trash2 className="h-4 w-4" />
+                           <Button variant="destructive" size="sm">
+                            <Trash2 className="mr-2 h-4 w-4" /> Delete
                           </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
@@ -156,17 +170,17 @@ export function ExpenseList() {
                           </AlertDialogFooter>
                         </AlertDialogContent>
                       </AlertDialog>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center">No expenses found.</TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                    </div>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        ) : (
+          <div className="text-center py-10 text-muted-foreground">
+            <p>No expenses found.</p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
