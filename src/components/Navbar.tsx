@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { DollarSign, LayoutDashboard, List, Settings, PlusCircle, Menu } from 'lucide-react';
+import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -45,7 +45,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
       <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
-        <DollarSign className="h-6 w-6" />
+        <IndianRupee className="h-6 w-6" />
         <span className="">PennyPincher</span>
       </Link>
       <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
@@ -72,7 +72,7 @@ export function Navbar() {
                     <SheetTitle className='sr-only'>Navigation Menu</SheetTitle>
                 </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary">
-                <DollarSign className="h-6 w-6" />
+                <IndianRupee className="h-6 w-6" />
                 <span>PennyPincher</span>
               </Link>
               {navLinks(true)}
