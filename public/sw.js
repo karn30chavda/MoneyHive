@@ -1,18 +1,66 @@
-// A simple, no-op service worker that takes immediate control.
-self.addEventListener('install', () => {
-  self.skipWaiting();
+const CACHE_NAME = 'pennypincher-cache-v1';
+const urlsToCache = [
+  '/',
+  '/expenses',
+  '/reports',
+  '/settings',
+  '/add-expense',
+  '/manifest.json',
+  '/favicon.ico',
+  // Add other important assets here
+];
+
+self.addEventListener('install', (event) => {
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
 });
 
-self.addEventListener('activate', () => {
-  self.clients.claim();
-});
-
-// The user's proposal asked for a PWA with offline support.
-// This basic service worker is the minimum required to meet the
-// "installable" criteria. More robust caching strategies can be
-// added here as needed.
 self.addEventListener('fetch', (event) => {
-  // For now, just pass through network requests.
-  // A real-world app would have caching logic here.
-  event.respondWith(fetch(event.request));
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        if (response) {
+          return response;
+        }
+
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(
+          (response) => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
+
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
+  );
+});
+
+self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })
+  );
 });
