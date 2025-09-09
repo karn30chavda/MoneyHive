@@ -1,79 +1,80 @@
-const CACHE_NAME = 'pennypincher-cache-v1';
+const CACHE_NAME = 'moneyhive-pwa-cache-v1';
 const urlsToCache = [
   '/',
-  '/add-expense',
   '/expenses',
   '/reports',
+  '/reminders',
   '/settings',
+  '/add-expense',
   '/manifest.json',
   '/favicon.ico',
+  '/icons/icon-72x72.png',
+  '/icons/icon-96x96.png',
+  '/icons/icon-128x128.png',
+  '/icons/icon-144x144.png',
+  '/icons/icon-152x152.png',
+  '/icons/icon-192x192.png',
+  '/icons/icon-384x384.png',
+  '/icons/icon-512x512.png',
+  // Note: Next.js assets are dynamically named, so we can't precache them all.
+  // The fetch event handler will cache them on first visit.
 ];
 
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('Opened cache');
-      return cache.addAll(urlsToCache);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('Opened cache');
+        return cache.addAll(urlsToCache);
+      })
+  );
+});
+
+self.addEventListener('fetch', (event) => {
+  event.respondWith(
+    caches.match(event.request)
+      .then((response) => {
+        // Cache hit - return response
+        if (response) {
+          return response;
+        }
+
+        // Clone the request because it's a stream and can only be consumed once.
+        const fetchRequest = event.request.clone();
+
+        return fetch(fetchRequest).then(
+          (response) => {
+            // Check if we received a valid response
+            if (!response || response.status !== 200 || response.type !== 'basic' && !response.type.startsWith('opaque')) {
+              return response;
+            }
+
+            // Clone the response because it's a stream and can only be consumed once.
+            const responseToCache = response.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                cache.put(event.request, responseToCache);
+              });
+
+            return response;
+          }
+        );
+      })
   );
 });
 
 self.addEventListener('activate', (event) => {
+  const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
+          if (cacheWhitelist.indexOf(cacheName) === -1) {
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  return self.clients.claim();
-});
-
-
-self.addEventListener('fetch', (event) => {
-    if (event.request.mode === 'navigate') {
-        event.respondWith(
-            (async () => {
-                try {
-                    const preloadResponse = await event.preloadResponse;
-                    if (preloadResponse) {
-                        return preloadResponse;
-                    }
-                    const networkResponse = await fetch(event.request);
-                    return networkResponse;
-                } catch (error) {
-                    console.log('Fetch failed; returning offline page instead.', error);
-                    const cache = await caches.open(CACHE_NAME);
-                    const cachedResponse = await cache.match(event.request.url);
-                    return cachedResponse || cache.match('/');
-                }
-            })()
-        );
-    } else if (urlsToCache.some(url => event.request.url.includes(url))) {
-        event.respondWith(
-            caches.match(event.request).then((response) => {
-                return response || fetch(event.request);
-            })
-        );
-    } else {
-         event.respondWith(
-            caches.open(CACHE_NAME).then(async (cache) => {
-                const cachedResponse = await cache.match(event.request);
-                if (cachedResponse) {
-                    return cachedResponse;
-                }
-                const networkResponse = await fetch(event.request);
-                // Only cache successful GET requests
-                if (event.request.method === 'GET' && networkResponse.ok) {
-                  await cache.put(event.request, networkResponse.clone());
-                }
-                return networkResponse;
-            })
-        );
-    }
 });
