@@ -158,7 +158,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
+                      </Trigger>
                     </FormControl>
                     <SelectContent>
                       {categories.map(c => (
