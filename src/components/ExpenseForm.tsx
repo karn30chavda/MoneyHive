@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm, FormProvider } from 'react-hook-form';
+import { FormProvider, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ export function ExpenseForm({
   const { toast } = useToast();
   const [isCategoryDialogOpen, setCategoryDialogOpen] = useState(false);
   const [newCategory, setNewCategory] = useState('');
+  const [isDatePickerOpen, setDatePickerOpen] = useState(false);
 
   const defaultValues = expenseToEdit
     ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
@@ -175,7 +176,7 @@ export function ExpenseForm({
             render={({ field }) => (
               <FormItem className="flex flex-col">
                 <FormLabel>Date</FormLabel>
-                <Popover>
+                <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
                       <Button
@@ -198,7 +199,10 @@ export function ExpenseForm({
                     <Calendar
                       mode="single"
                       selected={field.value}
-                      onSelect={field.onChange}
+                      onSelect={(date) => {
+                        field.onChange(date);
+                        setDatePickerOpen(false);
+                      }}
                       initialFocus
                     />
                   </PopoverContent>

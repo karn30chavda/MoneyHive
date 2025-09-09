@@ -44,6 +44,7 @@ const formatCurrency = (amount: number) => {
 export function RemindersClient() {
   const { reminders, addReminder, deleteReminder } = useExpenses();
   const { toast } = useToast();
+  const [isDatePickerOpen, setDatePickerOpen] = useState(false);
 
   const form = useForm<z.infer<typeof reminderSchema>>({
     resolver: zodResolver(reminderSchema),
@@ -140,7 +141,7 @@ export function RemindersClient() {
                   render={({ field }) => (
                     <FormItem className="flex flex-col">
                       <FormLabel>Due Date</FormLabel>
-                      <Popover>
+                      <Popover open={isDatePickerOpen} onOpenChange={setDatePickerOpen}>
                         <PopoverTrigger asChild>
                           <FormControl>
                             <Button
@@ -153,7 +154,15 @@ export function RemindersClient() {
                           </FormControl>
                         </PopoverTrigger>
                         <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                          <Calendar 
+                            mode="single" 
+                            selected={field.value} 
+                            onSelect={(date) => {
+                                field.onChange(date)
+                                setDatePickerOpen(false)
+                            }}
+                            initialFocus 
+                          />
                         </PopoverContent>
                       </Popover>
                       <FormMessage />
