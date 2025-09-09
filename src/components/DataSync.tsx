@@ -63,20 +63,39 @@ export function DataSync() {
         const content = e.target?.result;
         if (typeof content !== 'string') throw new Error('Invalid file content');
         
-        const importedExpenses: Omit<Expense, 'id'>[] = JSON.parse(content);
+        const importedExpensesRaw: any[] = JSON.parse(content);
+        if (!Array.isArray(importedExpensesRaw)) throw new Error('JSON is not an array');
+
+        const importedExpenses = importedExpensesRaw.filter(exp => 
+            exp.title && typeof exp.title === 'string' &&
+            exp.amount && typeof exp.amount === 'number' &&
+            exp.date && typeof exp.date === 'string' &&
+            exp.categoryId && typeof exp.categoryId === 'number' &&
+            exp.paymentMode && typeof exp.paymentMode === 'string'
+        ).map(({ title, amount, date, categoryId, paymentMode }) => ({ title, amount, date, categoryId, paymentMode }));
+
+
+        // Combine current expenses with imported ones
+        const currentExpenses = expenses.map(({ id, ...rest }) => rest);
+        const combinedExpenses = [...currentExpenses, ...importedExpenses];
         
-        if (!Array.isArray(importedExpenses)) throw new Error('JSON is not an array of expenses');
+        // A simple way to deduplicate based on a composite key
+        const uniqueExpensesMap = new Map<string, Omit<Expense, 'id'>>();
+        combinedExpenses.forEach(exp => {
+            const key = `${exp.title}-${exp.amount}-${exp.date}-${exp.categoryId}`;
+            uniqueExpensesMap.set(key, exp);
+        });
+        const uniqueExpenses = Array.from(uniqueExpensesMap.values());
         
         await db.clearExpenses();
 
         let importedCount = 0;
-        for (const exp of importedExpenses) {
-          if (exp.title && exp.amount && exp.date && exp.categoryId && exp.paymentMode) {
+        for (const exp of uniqueExpenses) {
             await addExpense(exp);
             importedCount++;
-          }
         }
-        toast({ title: 'Import Successful', description: `${importedCount} expenses were restored from your backup.` });
+
+        toast({ title: 'Import Successful', description: `${importedCount} total expenses are now in your list.` });
       } catch (error) {
         console.error(error);
         toast({ variant: 'destructive', title: 'Import Failed', description: 'Invalid JSON file format. Please use a valid backup file.' });
@@ -108,7 +127,7 @@ export function DataSync() {
         </div>
         <div>
           <h4 className="font-medium mb-2">Import Data</h4>
-          <p className="text-sm text-muted-foreground mb-2">Restore expenses from a JSON backup file. This will overwrite all current expense data.</p>
+          <p className="text-sm text-muted-foreground mb-2">Restore expenses from a JSON backup. This will merge the imported expenses with your current list.</p>
           <Button variant="outline" onClick={handleImportClick} disabled={loading}>
             <Upload className="mr-2 h-4 w-4" /> Import from JSON
           </Button>
