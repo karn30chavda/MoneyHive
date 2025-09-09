@@ -9,7 +9,7 @@ import { ArrowRight } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Expense, Category } from '@/types';
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR' }).format(amount);
+const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
 
 interface RecentExpensesProps {
   expenses: Expense[];

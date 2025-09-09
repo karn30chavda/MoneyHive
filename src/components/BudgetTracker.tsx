@@ -11,14 +11,7 @@ interface BudgetTrackerProps {
   settings: Settings;
 }
 
-const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(amount);
-};
+const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
 
 export function BudgetTracker({ expenses, settings }: BudgetTrackerProps) {
   const { monthlyBudget } = settings;
