@@ -97,16 +97,11 @@ export function Navbar() {
               <SheetHeader>
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               </SheetHeader>
-              <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary">
+              <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary" onClick={() => setSheetOpen(false)}>
                 <IndianRupee className="h-6 w-6" />
                 <span>PennyPincher</span>
               </Link>
               {navLinks(true)}
-              <Link href="/add-expense" passHref>
-                <Button className="w-full mt-8" onClick={() => handleLinkClick('/add-expense')}>
-                  <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
-                </Button>
-              </Link>
             </SheetContent>
           </Sheet>
         </div>
