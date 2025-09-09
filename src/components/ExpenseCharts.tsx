@@ -14,6 +14,15 @@ interface ExpenseChartsProps {
 
 const COLORS = ['#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
 
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount);
+  };
+
 export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   const categorySpending = useMemo(() => {
     const categoryMap = new Map<number, string>();
@@ -54,7 +63,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   
   const chartConfig = {
     amount: {
-      label: 'Amount (₹)',
+      label: 'Amount',
     },
   };
 
@@ -65,26 +74,28 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
         <CardContent className="flex justify-center">
-          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px]">
-            <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value, name) => [`₹${(value as number).toFixed(2)}`, name]} />} />
-              <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                  if (percent < 0.05) return null; // Don't render label for small slices
-                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                  const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
-                  const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
-                  return (
-                    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-bold">
-                      {`${(percent * 100).toFixed(0)}%`}
-                    </text>
-                  );
-                }}
-              >
-                {categorySpending.map((_, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-            </PieChart>
+          <ChartContainer config={chartConfig} className="w-full h-[250px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value) => formatCurrency(value as number)} />} />
+                <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                    if (percent < 0.05) return null; // Don't render label for small slices
+                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+                    const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+                    return (
+                        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-bold">
+                        {`${(percent * 100).toFixed(0)}%`}
+                        </text>
+                    );
+                    }}
+                >
+                    {categorySpending.map((_, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                </Pie>
+                </PieChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
@@ -97,8 +108,8 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickFormatter={(value) => `₹${value}`} width={80} />
-                <ChartTooltip content={<ChartTooltipContent formatter={(value, name) => [`₹${(value as number).toFixed(2)}`, name]} />} />
+                <YAxis tickFormatter={(value) => formatCurrency(value as number)} width={80} />
+                <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)} />} />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
               </BarChart>
             </ResponsiveContainer>
