@@ -5,6 +5,9 @@ import { SummaryCards } from '@/components/SummaryCards';
 import { BudgetTracker } from '@/components/BudgetTracker';
 import { Skeleton } from '@/components/ui/skeleton';
 import { RecentExpenses } from './RecentExpenses';
+import Link from 'next/link';
+import { Button } from './ui/button';
+import { PlusCircle } from 'lucide-react';
 
 export function DashboardClient() {
   const { expenses, settings, categories, loading } = useExpenses();
@@ -31,7 +34,15 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-4">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <Link href="/add-expense" passHref>
+          <Button>
+            <PlusCircle className="mr-2 h-4 w-4" />
+            New Expense
+          </Button>
+        </Link>
+      </div>
       <SummaryCards expenses={expenses} />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
         <div className="lg:col-span-4">
