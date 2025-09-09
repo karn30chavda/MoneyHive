@@ -19,11 +19,11 @@ const formatCurrency = (amount: number | bigint) => {
     }).format(numAmount);
 };
 
-const CustomTooltipContent = ({ active, payload, label }: any) => {
+const CustomTooltipContent = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-background border border-border p-2 rounded-lg shadow-sm">
-          <p className="label font-medium">{`${label}`}</p>
+          <p className="label font-medium">{payload[0].name}</p>
           <p className="intro flex items-center">
             <IndianRupee className="h-4 w-4 mr-1" />
             {formatCurrency(payload[0].value)}
