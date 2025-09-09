@@ -9,6 +9,7 @@ import Link from 'next/link';
 import { Button } from './ui/button';
 import { PlusCircle } from 'lucide-react';
 import { UpcomingReminders } from './UpcomingReminders';
+import { AppWalkthrough } from './AppWalkthrough';
 
 export function DashboardClient() {
   const { expenses, settings, categories, reminders, loading } = useExpenses();
@@ -37,6 +38,7 @@ export function DashboardClient() {
 
   return (
     <div className="space-y-4">
+      <AppWalkthrough />
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <Link href="/add-expense" passHref>
