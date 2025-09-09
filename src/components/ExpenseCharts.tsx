@@ -68,17 +68,17 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-      <Card className="lg:col-span-3">
+    <div className="grid gap-4 md:grid-cols-2">
+      <Card>
         <CardHeader>
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
-        <CardContent className="flex justify-center">
-          <ChartContainer config={chartConfig} className="w-full h-[250px]">
+        <CardContent>
+          <ChartContainer config={chartConfig} className="w-full h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                 <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value) => formatCurrency(value as number)} />} />
-                <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={50} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                     if (percent < 0.05) return null; // Don't render label for small slices
                     const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                     const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
@@ -99,12 +99,12 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           </ChartContainer>
         </CardContent>
       </Card>
-      <Card className="lg:col-span-4">
+      <Card>
         <CardHeader>
           <CardTitle>Daily Spending (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[280px] w-full">
+          <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />

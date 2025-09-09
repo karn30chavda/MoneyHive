@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu } from 'lucide-react';
+import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu, BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -12,6 +12,7 @@ import { useState } from 'react';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/expenses', label: 'Expenses', icon: List },
+  { href: '/reports', label: 'Reports', icon: BarChart },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
