@@ -24,7 +24,7 @@ const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
   date: z.date({ required_error: 'Date is required' }),
-  categoryId: z.coerce.number().min(1, 'Category is required'),
+  categoryId: z.coerce.number({invalid_type_error: 'Category is required'}).min(1, 'Category is required'),
   paymentMode: z.enum(['Cash', 'UPI', 'Card', 'Other']),
 });
 
@@ -39,7 +39,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
 
   const defaultValues = expenseToEdit
     ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
-    : { title: '', amount: 0, date: new Date(), categoryId: 0, paymentMode: 'Cash' as PaymentMode };
+    : { title: '', date: new Date(), paymentMode: 'Cash' as PaymentMode };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,6 +49,8 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
   useEffect(() => {
     if (expenseToEdit) {
       form.reset({ ...expenseToEdit, date: new Date(expenseToEdit.date) });
+    } else {
+        form.reset(defaultValues);
     }
   }, [expenseToEdit, form]);
 
@@ -110,12 +112,8 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                         type="number" 
                         step="0.01" 
                         placeholder="0.00" 
-                        {...field} 
-                        onFocus={(e) => {
-                          if (field.value === 0) {
-                            form.setValue('amount', '' as any);
-                          }
-                        }}
+                        {...field}
+                        onChange={event => field.onChange(+event.target.value)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -157,7 +155,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                   <FormItem>
                     <FormLabel>Category</FormLabel>
                     <div className="flex gap-2">
-                      <Select onValueChange={field.onChange} defaultValue={String(field.value)}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value ? String(field.value) : undefined}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a category" />
@@ -206,7 +204,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select a payment mode" />
-                        </SelectTrigger>
+                        </Trigger>
                       </FormControl>
                       <SelectContent>
                         {paymentModes.map(mode => (
