@@ -5,7 +5,7 @@ import type { Expense, Category } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
-import { subDays, format, parseISO, startOfDay, getMonth, getYear, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
+import { subDays, format, parseISO, startOfDay, getMonth, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 import { IndianRupee } from 'lucide-react';
 
 const COLORS = ['#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
