@@ -53,7 +53,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
     } else {
         form.reset(defaultValues);
     }
-  }, [expenseToEdit, form]);
+  }, [expenseToEdit, form, defaultValues]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
