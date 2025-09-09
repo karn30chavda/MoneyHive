@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { DollarSign, LayoutDashboard, List, Settings, PlusCircle, Menu } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
 import { useState } from 'react';
@@ -68,6 +68,9 @@ export function Navbar() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left">
+                <SheetHeader>
+                    <SheetTitle className='sr-only'>Navigation Menu</SheetTitle>
+                </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary">
                 <DollarSign className="h-6 w-6" />
                 <span>PennyPincher</span>
