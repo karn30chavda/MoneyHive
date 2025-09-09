@@ -26,7 +26,7 @@ export function Navbar() {
     if (loadingPath) {
       setLoadingPath(null);
     }
-  }, [pathname]);
+  }, [pathname, loadingPath]);
 
   const handleLinkClick = (href: string) => {
     if (pathname !== href) {
