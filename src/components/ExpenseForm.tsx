@@ -107,10 +107,10 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
               <FormItem>
                 <FormLabel>Amount</FormLabel>
                 <FormControl>
-                  <Input 
-                    type="number" 
-                    step="0.01" 
-                    placeholder="0.00" 
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="0.00"
                     {...field}
                   />
                 </FormControl>
@@ -236,7 +236,9 @@ export default function AddExpensePageClient() {
         if (expenseId) {
             setLoading(true);
             getExpenseById(parseInt(expenseId, 10)).then(expense => {
-                setExpenseToEdit(expense);
+                if(expense) {
+                    setExpenseToEdit(expense);
+                }
                 setLoading(false);
             });
         } else {
