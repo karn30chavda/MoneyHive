@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import * as db from '@/lib/db';
-import type { Expense, Category, Settings } from '@/types';
+import type { Expense, Category, Settings, Reminder } from '@/types';
 
 const events = new EventTarget();
 
@@ -14,20 +14,22 @@ export function useExpenses() {
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [settings, setSettings] = useState<Settings>({ id: 1, monthlyBudget: 0 });
+  const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [expensesData, categoriesData, settingsData] = await Promise.all([
+      const [expensesData, categoriesData, settingsData, remindersData] = await Promise.all([
         db.getExpenses(),
         db.getCategories(),
         db.getSettings(),
+        db.getReminders(),
       ]);
-      // Reverse expenses to show newest first
       setExpenses(expensesData.reverse());
       setCategories(categoriesData);
       setSettings(settingsData);
+      setReminders(remindersData);
     } catch (error) {
       console.error('Failed to load data from DB', error);
     } finally {
@@ -67,10 +69,19 @@ export function useExpenses() {
     await db.saveSettings(newSettings);
   }, []);
 
+  const addReminder = useCallback(async (reminder: Omit<Reminder, 'id'>) => {
+    await db.addReminder(reminder);
+  }, []);
+
+  const deleteReminder = useCallback(async (id: number) => {
+    await db.deleteReminder(id);
+  }, []);
+
   return {
     expenses,
     categories,
     settings,
+    reminders,
     loading,
     addExpense,
     updateExpense,
@@ -79,5 +90,7 @@ export function useExpenses() {
     addCategory,
     deleteCategory,
     saveSettings,
+    addReminder,
+    deleteReminder,
   };
 }

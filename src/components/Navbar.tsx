@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu, BarChart, Loader2 } from 'lucide-react';
+import { IndianRupee, LayoutDashboard, List, Settings, Menu, BarChart, Loader2, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/expenses', label: 'Expenses', icon: List },
   { href: '/reports', label: 'Reports', icon: BarChart },
+  { href: '/reminders', label: 'Reminders', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
 ];
 
@@ -22,7 +23,6 @@ export function Navbar() {
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
 
   useEffect(() => {
-    // When navigation completes, pathname changes and we can stop loading.
     if (loadingPath) {
       setLoadingPath(null);
     }

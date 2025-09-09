@@ -1,11 +1,11 @@
 'use client';
 import type { DBSchema, IDBPDatabase } from 'idb';
 import { openDB } from 'idb';
-import type { Expense, Category, Settings, PaymentMode } from '@/types';
+import type { Expense, Category, Settings, Reminder } from '@/types';
 import { notifyDbUpdate } from '@/hooks/use-expenses';
 
-const DB_NAME = 'PennyPincherDB';
-const DB_VERSION = 1;
+const DB_NAME = 'MoneyHiveDB';
+const DB_VERSION = 2; // Incremented version for schema change
 
 const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Food', isDefault: true },
@@ -18,7 +18,7 @@ const DEFAULT_CATEGORIES: Omit<Category, 'id'>[] = [
   { name: 'Miscellaneous', isDefault: true },
 ];
 
-interface PennyPincherDB extends DBSchema {
+interface MoneyHiveDB extends DBSchema {
   expenses: {
     key: number;
     value: Expense;
@@ -32,14 +32,19 @@ interface PennyPincherDB extends DBSchema {
     key: number;
     value: Settings;
   };
+  reminders: {
+    key: number;
+    value: Reminder;
+    indexes: { 'dueDate': string };
+  };
 }
 
-let db: IDBPDatabase<PennyPincherDB> | null = null;
+let db: IDBPDatabase<MoneyHiveDB> | null = null;
 
 async function getDb() {
   if (db) return db;
 
-  db = await openDB<PennyPincherDB>(DB_NAME, DB_VERSION, {
+  db = await openDB<MoneyHiveDB>(DB_NAME, DB_VERSION, {
     upgrade(db, oldVersion, newVersion, transaction) {
       if (!db.objectStoreNames.contains('expenses')) {
         const expenseStore = db.createObjectStore('expenses', { keyPath: 'id', autoIncrement: true });
@@ -53,10 +58,15 @@ async function getDb() {
         const settingsStore = db.createObjectStore('settings', { keyPath: 'id', autoIncrement: true });
         settingsStore.add({ monthlyBudget: 0, id: 1 });
       }
+      if (oldVersion < 2) { // Check if we need to add the reminders store
+        if (!db.objectStoreNames.contains('reminders')) {
+          const reminderStore = db.createObjectStore('reminders', { keyPath: 'id', autoIncrement: true });
+          reminderStore.createIndex('dueDate', 'dueDate');
+        }
+      }
     },
   });
 
-  // Check if default settings exist
   const settings = await db.get('settings', 1);
   if (!settings) {
     await db.add('settings', { monthlyBudget: 0, id: 1 });
@@ -122,5 +132,23 @@ export const getSettings = async (): Promise<Settings> => {
 export const saveSettings = async (settings: Settings) => {
   const db = await getDb();
   await db.put('settings', { ...settings, id: 1 });
+  notifyDbUpdate();
+};
+
+// Reminders
+export const addReminder = async (reminder: Omit<Reminder, 'id'>) => {
+  const db = await getDb();
+  await db.add('reminders', reminder as Reminder);
+  notifyDbUpdate();
+};
+
+export const getReminders = async (): Promise<Reminder[]> => {
+  const db = await getDb();
+  return db.getAllFromIndex('reminders', 'dueDate');
+};
+
+export const deleteReminder = async (id: number) => {
+  const db = await getDb();
+  await db.delete('reminders', id);
   notifyDbUpdate();
 };
