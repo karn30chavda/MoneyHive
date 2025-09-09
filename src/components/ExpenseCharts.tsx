@@ -73,7 +73,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
         <CardHeader>
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-hidden">
           <ChartContainer config={chartConfig} className="w-full h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -103,7 +103,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
         <CardHeader>
           <CardTitle>Daily Spending (Last 7 Days)</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="overflow-hidden">
           <ChartContainer config={chartConfig} className="h-[300px] w-full">
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
