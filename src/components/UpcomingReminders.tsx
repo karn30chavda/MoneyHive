@@ -36,35 +36,31 @@ interface UpcomingRemindersProps {
 
 export function UpcomingReminders({ reminders }: UpcomingRemindersProps) {
   
-  const upcomingReminders = useMemo(() => {
-    return reminders.slice(0, 3);
+  const nextReminder = useMemo(() => {
+    return reminders.length > 0 ? reminders[0] : null;
   }, [reminders]);
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Upcoming Reminders</CardTitle>
+        <CardTitle>Upcoming Reminder</CardTitle>
       </CardHeader>
       <CardContent>
-        {upcomingReminders.length > 0 ? (
-            <div className="space-y-4">
-                {upcomingReminders.map(reminder => (
-                    <div key={reminder.id} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div>
-                            <p className="font-medium">{reminder.title}</p>
-                            <p className="text-sm text-muted-foreground flex items-center">
-                                <IndianRupee className="h-4 w-4 mr-1"/> {formatCurrency(reminder.amount)}
-                            </p>
-                        </div>
-                       <div className="text-right">
-                            <p className="font-medium text-sm">{getDueDateMessage(new Date(reminder.dueDate))}</p>
-                            <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
-                                <Calendar className="h-3 w-3"/>
-                                {format(new Date(reminder.dueDate), 'PP')}
-                            </p>
-                       </div>
-                    </div>
-                ))}
+        {nextReminder ? (
+            <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                    <p className="font-medium">{nextReminder.title}</p>
+                    <p className="text-sm text-muted-foreground flex items-center">
+                        <IndianRupee className="h-4 w-4 mr-1"/> {formatCurrency(nextReminder.amount)}
+                    </p>
+                </div>
+               <div className="text-right">
+                    <p className="font-medium text-sm">{getDueDateMessage(new Date(nextReminder.dueDate))}</p>
+                    <p className="text-xs text-muted-foreground flex items-center justify-end gap-1">
+                        <Calendar className="h-3 w-3"/>
+                        {format(new Date(nextReminder.dueDate), 'PP')}
+                    </p>
+               </div>
             </div>
         ) : (
             <div className="text-center py-6 text-muted-foreground">
