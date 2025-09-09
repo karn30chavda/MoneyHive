@@ -7,9 +7,10 @@ import { Download, Upload } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import type { Expense } from '@/types';
+import * as db from '@/lib/db';
 
 export function DataSync() {
-  const { expenses, addExpense } = useExpenses();
+  const { expenses, addExpense, loading } = useExpenses();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -24,12 +25,13 @@ export function DataSync() {
     let fileExtension;
 
     if (format === 'json') {
-      data = JSON.stringify(expenses, null, 2);
+      const exportableExpenses = expenses.map(({ id, ...rest }) => rest);
+      data = JSON.stringify(exportableExpenses, null, 2);
       mimeType = 'application/json';
       fileExtension = 'json';
     } else {
-      const header = ['id', 'title', 'amount', 'date', 'categoryId', 'paymentMode'];
-      const rows = expenses.map(e => [e.id, e.title, e.amount, e.date, e.categoryId, e.paymentMode].join(','));
+      const header = ['title', 'amount', 'date', 'categoryId', 'paymentMode'];
+      const rows = expenses.map(e => [e.title, e.amount, e.date, e.categoryId, e.paymentMode].join(','));
       data = [header.join(','), ...rows].join('\n');
       mimeType = 'text/csv';
       fileExtension = 'csv';
@@ -39,7 +41,7 @@ export function DataSync() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `moneyhive_expenses_${new Date().toISOString()}.${fileExtension}`;
+    a.download = `moneyhive_expenses_${new Date().toISOString().split('T')[0]}.${fileExtension}`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -63,9 +65,10 @@ export function DataSync() {
         
         const importedExpenses: Omit<Expense, 'id'>[] = JSON.parse(content);
         
-        // Basic validation
-        if (!Array.isArray(importedExpenses)) throw new Error('JSON is not an array');
+        if (!Array.isArray(importedExpenses)) throw new Error('JSON is not an array of expenses');
         
+        await db.clearExpenses();
+
         let importedCount = 0;
         for (const exp of importedExpenses) {
           if (exp.title && exp.amount && exp.date && exp.categoryId && exp.paymentMode) {
@@ -73,38 +76,40 @@ export function DataSync() {
             importedCount++;
           }
         }
-        toast({ title: 'Import Successful', description: `${importedCount} expenses imported.` });
+        toast({ title: 'Import Successful', description: `${importedCount} expenses were restored from your backup.` });
       } catch (error) {
-        toast({ variant: 'destructive', title: 'Import Failed', description: 'Invalid JSON file or format.' });
+        console.error(error);
+        toast({ variant: 'destructive', title: 'Import Failed', description: 'Invalid JSON file format. Please use a valid backup file.' });
+      } finally {
+        if (event.target) event.target.value = '';
       }
     };
     reader.readAsText(file);
-    // Reset file input
-    if (event.target) event.target.value = '';
   };
 
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data Backup</CardTitle>
+        <CardTitle>Data Backup & Restore</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
           <h4 className="font-medium mb-2">Export Data</h4>
+          <p className="text-sm text-muted-foreground mb-2">Save a backup of all your expense data.</p>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => handleExport('json')}>
+            <Button variant="outline" onClick={() => handleExport('json')} disabled={loading || expenses.length === 0}>
               <Download className="mr-2 h-4 w-4" /> Export as JSON
             </Button>
-            <Button variant="outline" onClick={() => handleExport('csv')}>
+            <Button variant="outline" onClick={() => handleExport('csv')} disabled={loading || expenses.length === 0}>
               <Download className="mr-2 h-4 w-4" /> Export as CSV
             </Button>
           </div>
         </div>
         <div>
           <h4 className="font-medium mb-2">Import Data</h4>
-          <p className="text-sm text-muted-foreground mb-2">Import expenses from a JSON file.</p>
-          <Button variant="outline" onClick={handleImportClick}>
+          <p className="text-sm text-muted-foreground mb-2">Restore expenses from a JSON backup file. This will overwrite all current expense data.</p>
+          <Button variant="outline" onClick={handleImportClick} disabled={loading}>
             <Upload className="mr-2 h-4 w-4" /> Import from JSON
           </Button>
           <input

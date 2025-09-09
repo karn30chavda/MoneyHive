@@ -104,6 +104,12 @@ export const getExpenseById = async (id: number) => {
   return db.get('expenses', id);
 };
 
+export const clearExpenses = async () => {
+    const db = await getDb();
+    await db.clear('expenses');
+    notifyDbUpdate();
+}
+
 // Categories
 export const addCategory = async (category: Omit<Category, 'id'>) => {
   const db = await getDb();
