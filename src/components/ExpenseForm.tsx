@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { FormProvider, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
@@ -136,7 +136,7 @@ export function ExpenseForm({
   };
 
   return (
-    <FormProvider {...form}>
+    <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
@@ -164,6 +164,7 @@ export function ExpenseForm({
                     step="0.01"
                     placeholder="0.00"
                     {...field}
+                    value={field.value ?? ''}
                   />
                 </FormControl>
                 <FormMessage />
@@ -302,7 +303,7 @@ export function ExpenseForm({
           )}
         </Button>
       </form>
-    </FormProvider>
+    </Form>
   );
 }
 
