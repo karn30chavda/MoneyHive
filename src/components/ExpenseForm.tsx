@@ -1,12 +1,18 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useForm } from 'react-hook-form';
+import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -17,20 +23,39 @@ import { CalendarIcon, PlusCircle, Pen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Card, CardContent } from '@/components/ui/card';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
   date: z.date({ required_error: 'Date is required' }),
-  categoryId: z.coerce.number({invalid_type_error: 'Category is required', required_error: 'Category is required'}).min(1, 'Category is required'),
-  paymentMode: z.enum(['Cash', 'UPI', 'Card', 'Other'], { required_error: 'Payment mode is required' }),
+  categoryId: z.coerce
+    .number({
+      invalid_type_error: 'Category is required',
+      required_error: 'Category is required',
+    })
+    .min(1, 'Category is required'),
+  paymentMode: z.enum(['Cash', 'UPI', 'Card', 'Other'], {
+    required_error: 'Payment mode is required',
+  }),
 });
 
 const paymentModes: PaymentMode[] = ['Cash', 'UPI', 'Card', 'Other'];
 
-export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Expense; onFinished?: () => void }) {
+export function ExpenseForm({
+  expenseToEdit,
+  onFinished,
+}: {
+  expenseToEdit?: Expense;
+  onFinished?: () => void;
+}) {
   const router = useRouter();
   const { categories, addExpense, updateExpense, addCategory } = useExpenses();
   const { toast } = useToast();
@@ -39,7 +64,13 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
 
   const defaultValues = expenseToEdit
     ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
-    : { title: '', amount: undefined, date: new Date(), paymentMode: undefined, categoryId: undefined };
+    : {
+        title: '',
+        amount: undefined,
+        date: new Date(),
+        paymentMode: undefined,
+        categoryId: undefined,
+      };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,21 +79,34 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
 
   useEffect(() => {
     if (expenseToEdit) {
-      form.reset({ ...expenseToEdit, date: new Date(expenseToEdit.date), amount: expenseToEdit.amount });
+      form.reset({
+        ...expenseToEdit,
+        date: new Date(expenseToEdit.date),
+        amount: expenseToEdit.amount,
+      });
     } else {
-        form.reset(defaultValues);
+      form.reset(defaultValues);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expenseToEdit, form]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (expenseToEdit) {
-        await updateExpense({ ...values, id: expenseToEdit.id!, date: values.date.toISOString(), categoryId: values.categoryId! });
-        toast({ title: "Success", description: "Expense updated successfully." });
+        await updateExpense({
+          ...values,
+          id: expenseToEdit.id!,
+          date: values.date.toISOString(),
+          categoryId: values.categoryId!,
+        });
+        toast({ title: 'Success', description: 'Expense updated successfully.' });
       } else {
-        await addExpense({ ...values, date: values.date.toISOString(), categoryId: values.categoryId! });
-        toast({ title: "Success", description: "Expense added successfully." });
+        await addExpense({
+          ...values,
+          date: values.date.toISOString(),
+          categoryId: values.categoryId!,
+        });
+        toast({ title: 'Success', description: 'Expense added successfully.' });
       }
       if (onFinished) {
         onFinished();
@@ -70,7 +114,11 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
         router.push('/expenses');
       }
     } catch (error) {
-      toast({ variant: 'destructive', title: "Error", description: "Failed to save expense." });
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save expense.',
+      });
     }
   }
 
@@ -79,12 +127,15 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
       await addCategory({ name: newCategory.trim() });
       setNewCategory('');
       setCategoryDialogOpen(false);
-      toast({ title: 'Success', description: `Category "${newCategory}" added.` });
+      toast({
+        title: 'Success',
+        description: `Category "${newCategory}" added.`,
+      });
     }
   };
 
   return (
-    <Form {...form}>
+    <FormProvider {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <FormField
           control={form.control}
@@ -129,15 +180,27 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                     <FormControl>
                       <Button
                         variant={'outline'}
-                        className={cn('pl-3 text-left font-normal', !field.value && 'text-muted-foreground')}
+                        className={cn(
+                          'pl-3 text-left font-normal',
+                          !field.value && 'text-muted-foreground',
+                        )}
                       >
-                        {field.value ? format(field.value, 'PPP') : <span>Pick a date</span>}
+                        {field.value ? (
+                          format(field.value, 'PPP')
+                        ) : (
+                          <span>Pick a date</span>
+                        )}
                         <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                    <Calendar
+                      mode="single"
+                      selected={field.value}
+                      onSelect={field.onChange}
+                      initialFocus
+                    />
                   </PopoverContent>
                 </Popover>
                 <FormMessage />
@@ -153,21 +216,27 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <div className="flex gap-2">
-                  <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined}>
+                  <Select
+                    onValueChange={(val) => field.onChange(Number(val))}
+                    value={field.value ? String(field.value) : undefined}
+                  >
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
-                      </Trigger>
+                      </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {categories.map(c => (
+                      {categories.map((c) => (
                         <SelectItem key={c.id} value={String(c.id)}>
                           {c.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  <Dialog open={isCategoryDialogOpen} onOpenChange={setCategoryDialogOpen}>
+                  <Dialog
+                    open={isCategoryDialogOpen}
+                    onOpenChange={setCategoryDialogOpen}
+                  >
                     <DialogTrigger asChild>
                       <Button variant="outline" size="icon" className="shrink-0">
                         <PlusCircle className="h-4 w-4" />
@@ -202,10 +271,10 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a payment mode" />
-                    </Trigger>
+                    </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {paymentModes.map(mode => (
+                    {paymentModes.map((mode) => (
                       <SelectItem key={mode} value={mode}>
                         {mode}
                       </SelectItem>
@@ -218,46 +287,58 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
           />
         </div>
         <Button type="submit" className="w-full md:w-auto">
-          {expenseToEdit ? <><Pen className="mr-2 h-4 w-4" /> Update Expense</> : <><PlusCircle className="mr-2 h-4 w-4" /> Add Expense</>}
+          {expenseToEdit ? (
+            <>
+              <Pen className="mr-2 h-4 w-4" /> Update Expense
+            </>
+          ) : (
+            <>
+              <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
+            </>
+          )}
         </Button>
       </form>
-    </Form>
+    </FormProvider>
   );
 }
 
 export default function AddExpensePageClient() {
-    const searchParams = useSearchParams();
-    const expenseId = searchParams.get('id');
-    const { getExpenseById } = useExpenses();
-    const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(undefined);
-    const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
+  const expenseId = searchParams.get('id');
+  const { getExpenseById } = useExpenses();
+  const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(
+    undefined,
+  );
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        if (expenseId) {
-            setLoading(true);
-            getExpenseById(parseInt(expenseId, 10)).then(expense => {
-                if(expense) {
-                    setExpenseToEdit(expense);
-                }
-                setLoading(false);
-            });
-        } else {
-            setLoading(false);
+  useEffect(() => {
+    if (expenseId) {
+      setLoading(true);
+      getExpenseById(parseInt(expenseId, 10)).then((expense) => {
+        if (expense) {
+          setExpenseToEdit(expense);
         }
-    }, [expenseId, getExpenseById]);
-
-    if (loading) {
-        return <p>Loading...</p>;
+        setLoading(false);
+      });
+    } else {
+      setLoading(false);
     }
+  }, [expenseId, getExpenseById]);
 
-    return (
-        <div className="space-y-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-4">{expenseToEdit ? 'Edit Expense' : 'Add New Expense'}</h1>
-            <Card>
-                <CardContent className="pt-6">
-                    <ExpenseForm expenseToEdit={expenseToEdit} />
-                </CardContent>
-            </Card>
-        </div>
-    );
+  if (loading) {
+    return <p>Loading...</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-3xl font-bold tracking-tight mb-4">
+        {expenseToEdit ? 'Edit Expense' : 'Add New Expense'}
+      </h1>
+      <Card>
+        <CardContent className="pt-6">
+          <ExpenseForm expenseToEdit={expenseToEdit} />
+        </CardContent>
+      </Card>
+    </div>
+  );
 }
