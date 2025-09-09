@@ -65,7 +65,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[300px]">
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[250px] sm:max-h-[300px]">
             <PieChart>
               <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
               <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
@@ -82,10 +82,10 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <CardTitle>Daily Spending (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[300px] w-full">
+          <ChartContainer config={chartConfig} className="h-[250px] w-full sm:h-[300px]">
             <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
               <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis tickFormatter={(value) => `$${value}`} />
+              <YAxis tickFormatter={(value) => `₹${value}`} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Bar dataKey="amount" fill="var(--color-primary)" radius={8} />
             </BarChart>
