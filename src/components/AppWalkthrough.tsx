@@ -6,6 +6,7 @@ import { Button } from './ui/button';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious, type CarouselApi } from './ui/carousel';
 import Image from 'next/image';
 import { ArrowRight, Wallet, BarChart, Bell, Settings } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const walkthroughSteps = [
   {
