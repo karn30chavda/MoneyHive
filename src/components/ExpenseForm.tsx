@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -59,7 +58,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       if (expenseToEdit) {
-        await updateExpense({ ...values, id: expenseToEdit.id, date: values.date.toISOString(), categoryId: values.categoryId! });
+        await updateExpense({ ...values, id: expenseToEdit.id!, date: values.date.toISOString(), categoryId: values.categoryId! });
         toast({ title: "Success", description: "Expense updated successfully." });
       } else {
         await addExpense({ ...values, date: values.date.toISOString(), categoryId: values.categoryId! });
