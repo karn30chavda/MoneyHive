@@ -106,7 +106,17 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                   <FormItem>
                     <FormLabel>Amount</FormLabel>
                     <FormControl>
-                      <Input type="number" step="0.01" placeholder="0.00" {...field} />
+                      <Input 
+                        type="number" 
+                        step="0.01" 
+                        placeholder="0.00" 
+                        {...field} 
+                        onFocus={(e) => {
+                          if (field.value === 0) {
+                            form.setValue('amount', '' as any);
+                          }
+                        }}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
