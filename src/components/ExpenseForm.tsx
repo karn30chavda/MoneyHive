@@ -154,7 +154,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <div className="flex gap-2">
-                  <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined} defaultValue={field.value ? String(field.value) : undefined}>
+                  <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
@@ -199,7 +199,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Payment Mode</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a payment mode" />

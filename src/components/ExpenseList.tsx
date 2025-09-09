@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag } from 'lucide-react';
+import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag, PlusCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ExpenseForm } from './ExpenseForm';
 import type { Expense } from '@/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import Link from 'next/link';
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -56,7 +57,7 @@ export function ExpenseList() {
       .sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        return sortOrder === 'newest' ? dateB - dateA : dateA - b;
       });
   }, [expenses, searchTerm, categoryFilter, sortOrder]);
 
@@ -76,7 +77,15 @@ export function ExpenseList() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Expense History</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle>Expense History</CardTitle>
+          <Link href="/add-expense" passHref>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Expense
+            </Button>
+          </Link>
+        </div>
         <div className="mt-4 flex flex-col md:flex-row gap-4">
           <Input
             placeholder="Search by title..."
