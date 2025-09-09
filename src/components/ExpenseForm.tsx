@@ -24,7 +24,7 @@ const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
   amount: z.coerce.number().min(0.01, 'Amount must be greater than 0'),
   date: z.date({ required_error: 'Date is required' }),
-  categoryId: z.coerce.number({invalid_type_error: 'Category is required'}).min(1, 'Category is required').optional(),
+  categoryId: z.coerce.number({invalid_type_error: 'Category is required'}).min(1, 'Category is required'),
   paymentMode: z.enum(['Cash', 'UPI', 'Card', 'Other']),
 });
 
@@ -157,7 +157,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
+                      </Trigger>
                     </FormControl>
                     <SelectContent>
                       {categories.map(c => (
