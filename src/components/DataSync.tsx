@@ -53,7 +53,7 @@ export function DataSync() {
     fileInputRef.current?.click();
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -91,7 +91,7 @@ export function DataSync() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Data Backup & Restore</CardTitle>
+        <CardTitle>Data Backup and Restore</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
