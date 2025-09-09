@@ -18,8 +18,8 @@ import { CalendarIcon, PlusCircle, Pen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-import { Card, CardContent } from './ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
 
 const formSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -40,7 +40,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
 
   const defaultValues = expenseToEdit
     ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
-    : { title: '', date: new Date(), paymentMode: undefined, categoryId: undefined };
+    : { title: '', amount: undefined, date: new Date(), paymentMode: undefined, categoryId: undefined };
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,7 +49,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
 
   useEffect(() => {
     if (expenseToEdit) {
-      form.reset({ ...expenseToEdit, date: new Date(expenseToEdit.date) });
+      form.reset({ ...expenseToEdit, date: new Date(expenseToEdit.date), amount: expenseToEdit.amount });
     } else {
         form.reset(defaultValues);
     }
@@ -113,7 +113,6 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
                     step="0.01" 
                     placeholder="0.00" 
                     {...field}
-                    onChange={event => field.onChange(+event.target.value)}
                   />
                 </FormControl>
                 <FormMessage />
@@ -155,7 +154,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
               <FormItem>
                 <FormLabel>Category</FormLabel>
                 <div className="flex gap-2">
-                  <Select onValueChange={field.onChange} defaultValue={field.value ? String(field.value) : undefined}>
+                  <Select onValueChange={field.onChange} value={field.value ? String(field.value) : undefined} defaultValue={field.value ? String(field.value) : undefined}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select a category" />
@@ -200,7 +199,7 @@ export function ExpenseForm({ expenseToEdit, onFinished }: { expenseToEdit?: Exp
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Payment Mode</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Select a payment mode" />
@@ -251,7 +250,7 @@ export default function AddExpensePageClient() {
     }
 
     return (
-        <div>
+        <div className="space-y-4">
             <h1 className="text-3xl font-bold tracking-tight mb-4">{expenseToEdit ? 'Edit Expense' : 'Add New Expense'}</h1>
             <Card>
                 <CardContent className="pt-6">
