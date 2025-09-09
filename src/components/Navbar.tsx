@@ -78,12 +78,6 @@ export function Navbar() {
         {navLinks()}
       </div>
       <div className="flex w-full items-center justify-end gap-4 md:w-auto md:ml-auto">
-        <Link href="/add-expense" passHref>
-          <Button className="gap-1 hidden sm:flex">
-            <PlusCircle className="h-4 w-4" />
-            Add Expense
-          </Button>
-        </Link>
         <ThemeToggle />
         <div className="md:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
