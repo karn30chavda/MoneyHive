@@ -7,11 +7,6 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
 import { subDays, format, parseISO, startOfDay } from 'date-fns';
 
-interface ExpenseChartsProps {
-  expenses: Expense[];
-  categories: Category[];
-}
-
 const COLORS = ['#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
 
 const formatCurrency = (amount: number) => {
