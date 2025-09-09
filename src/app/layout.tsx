@@ -13,7 +13,7 @@ const ptSans = PT_Sans({
 
 
 export const metadata: Metadata = {
-  title: 'LedgerLite PWA',
+  title: 'MoneyHive PWA',
   description: 'A personal expense tracker that works offline.',
   manifest: '/manifest.json',
 };

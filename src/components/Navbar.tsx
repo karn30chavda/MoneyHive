@@ -72,7 +72,7 @@ export function Navbar() {
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
       <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
         <IndianRupee className="h-6 w-6" />
-        <span className="">LedgerLite</span>
+        <span className="">MoneyHive</span>
       </Link>
       <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
         {navLinks()}
@@ -99,7 +99,7 @@ export function Navbar() {
               </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary" onClick={() => setSheetOpen(false)}>
                 <IndianRupee className="h-6 w-6" />
-                <span>LedgerLite</span>
+                <span>MoneyHive</span>
               </Link>
               {navLinks(true)}
             </SheetContent>
