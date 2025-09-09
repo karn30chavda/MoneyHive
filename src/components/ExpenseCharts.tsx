@@ -5,7 +5,7 @@ import type { Expense, Category } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
-import { subDays, format, parseISO, startOfDay } from 'date-fns';
+import { subDays, format, parseISO, startOfDay, getMonth, getYear, startOfYear, endOfYear, isWithinInterval } from 'date-fns';
 import { IndianRupee } from 'lucide-react';
 
 const COLORS = ['#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
@@ -22,8 +22,8 @@ const formatCurrency = (amount: number | bigint) => {
 const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
-      const isDailyChart = 'date' in data;
-      const tooltipLabel = isDailyChart ? data.date : data.name;
+      const isDailyOrMonthlyChart = 'date' in data || 'month' in data;
+      const tooltipLabel = isDailyOrMonthlyChart ? (data.date || data.month) : data.name;
       const tooltipValue = payload[0].value;
 
       return (
@@ -82,6 +82,23 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
       }));
   }, [expenses]);
   
+  const monthlySpending = useMemo(() => {
+    const spending = new Array(12).fill(0).map((_, i) => ({ month: format(new Date(0, i), 'MMM'), amount: 0 }));
+    const now = new Date();
+    const yearStart = startOfYear(now);
+    const yearEnd = endOfYear(now);
+
+    expenses.forEach(expense => {
+        const expenseDate = parseISO(expense.date);
+        if (isWithinInterval(expenseDate, { start: yearStart, end: yearEnd })) {
+            const monthIndex = getMonth(expenseDate);
+            spending[monthIndex].amount += expense.amount;
+        }
+    });
+
+    return spending;
+  }, [expenses]);
+
   const chartConfig = {
     amount: {
       label: 'Amount',
@@ -90,7 +107,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   };
 
   return (
-    <div className="grid gap-4 md:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2 grid-cols-1">
       <Card className="overflow-hidden">
         <CardHeader>
           <CardTitle>Spending by Category</CardTitle>
@@ -119,6 +136,23 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickFormatter={(value) => `${formatCurrency(value as number).split('.')[0]}`} width={60} />
+                <ChartTooltip content={<CustomTooltipContent />} />
+                <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
+              </BarChart>
+            </ResponsiveContainer>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+       <Card className="overflow-hidden md:col-span-2">
+        <CardHeader>
+          <CardTitle>Monthly Spending (This Year)</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer config={chartConfig} className="h-[250px] sm:h-[300px] w-full">
+            <ResponsiveContainer>
+              <BarChart accessibilityLayer data={monthlySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+                <XAxis dataKey="month" tickLine={false} axisLine={false} tickMargin={8} />
                 <YAxis tickFormatter={(value) => `${formatCurrency(value as number).split('.')[0]}`} width={60} />
                 <ChartTooltip content={<CustomTooltipContent />} />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />

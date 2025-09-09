@@ -10,10 +10,11 @@ export function ReportsClient() {
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <Skeleton className="lg:col-span-3 h-[380px]" />
-          <Skeleton className="lg:col-span-4 h-[380px]" />
+        <div className="grid gap-4 md:grid-cols-2">
+          <Skeleton className="h-[380px]" />
+          <Skeleton className="h-[380px]" />
         </div>
+        <Skeleton className="h-[380px]" />
       </div>
     );
   }
