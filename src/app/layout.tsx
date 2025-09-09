@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from 'next';
-import { useEffect } from 'react';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/Navbar";
+import { PwaSetup } from '@/components/PwaSetup';
 
 export const metadata: Metadata = {
   title: 'PennyPincher PWA',
@@ -40,16 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-const PwaSetup = () => {
-  useEffect(() => {
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker
-        .register('/sw.js')
-        .then((registration) => console.log('Service Worker registered with scope:', registration.scope))
-        .catch((error) => console.error('Service Worker registration failed:', error));
-    }
-  }, []);
-
-  return null;
-};
