@@ -2,12 +2,13 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IndianRupee, LayoutDashboard, List, Settings, Menu, BarChart, Loader2, Bell } from 'lucide-react';
+import { LayoutDashboard, List, Settings, Menu, BarChart, Loader2, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
 import { useState, useEffect } from 'react';
+import { Logo } from './Logo';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -71,7 +72,7 @@ export function Navbar() {
   return (
     <header className="sticky top-0 flex h-16 items-center gap-4 border-b bg-background px-4 md:px-6 z-50">
       <Link href="/" className="flex items-center gap-2 font-semibold text-primary">
-        <IndianRupee className="h-6 w-6" />
+        <Logo className="h-6 w-6" />
         <span className="">MoneyHive</span>
       </Link>
       <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
@@ -92,7 +93,7 @@ export function Navbar() {
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
               </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary" onClick={() => setSheetOpen(false)}>
-                <IndianRupee className="h-6 w-6" />
+                <Logo className="h-6 w-6" />
                 <span>MoneyHive</span>
               </Link>
               {navLinks(true)}
