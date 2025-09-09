@@ -54,7 +54,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   
   const chartConfig = {
     amount: {
-      label: 'Amount',
+      label: 'Amount (₹)',
     },
   };
 
@@ -65,10 +65,20 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <CardTitle>Spending by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[250px]">
+          <ChartContainer config={chartConfig} className="mx-auto aspect-square max-h-[280px] w-full">
             <PieChart>
-              <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
-              <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5}>
+              <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value, name) => [`₹${(value as number).toFixed(2)}`, name]} />} />
+              <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius={60} strokeWidth={5} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
+                  const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                  const x = cx + radius * Math.cos(-midAngle * (Math.PI / 180));
+                  const y = cy + radius * Math.sin(-midAngle * (Math.PI / 180));
+                  return (
+                    <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-bold">
+                      {`${(percent * 100).toFixed(0)}%`}
+                    </text>
+                  );
+                }}
+              >
                 {categorySpending.map((_, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
@@ -82,13 +92,15 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <CardTitle>Daily Spending (Last 7 Days)</CardTitle>
         </CardHeader>
         <CardContent>
-          <ChartContainer config={chartConfig} className="h-[250px] w-full">
-            <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
-              <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-              <YAxis tickFormatter={(value) => `₹${value}`} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="amount" fill="var(--color-primary)" radius={8} />
-            </BarChart>
+          <ChartContainer config={chartConfig} className="h-[280px] w-full">
+            <ResponsiveContainer>
+              <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
+                <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
+                <YAxis tickFormatter={(value) => `₹${value}`} />
+                <ChartTooltip content={<ChartTooltipContent formatter={(value, name) => [`₹${(value as number).toFixed(2)}`, name]} />} />
+                <Bar dataKey="amount" fill="var(--color-primary)" radius={8} />
+              </BarChart>
+            </ResponsiveContainer>
           </ChartContainer>
         </CardContent>
       </Card>
