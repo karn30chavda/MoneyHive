@@ -2,12 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu, BarChart } from 'lucide-react';
+import { IndianRupee, LayoutDashboard, List, Settings, PlusCircle, Menu, BarChart, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
 import { ThemeToggle } from './ThemeToggle';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
@@ -19,27 +19,52 @@ const navItems = [
 export function Navbar() {
   const pathname = usePathname();
   const [isSheetOpen, setSheetOpen] = useState(false);
+  const [loadingPath, setLoadingPath] = useState<string | null>(null);
 
+  useEffect(() => {
+    // When navigation completes, pathname changes and we can stop loading.
+    if (loadingPath) {
+      setLoadingPath(null);
+    }
+  }, [pathname]);
+
+  const handleLinkClick = (href: string) => {
+    if (pathname !== href) {
+      setLoadingPath(href);
+    }
+    setSheetOpen(false);
+  };
+  
   const navLinks = (isMobile = false) => (
     <nav className={cn(
       "items-center text-sm font-medium",
       isMobile ? "flex flex-col gap-4 mt-8" : "hidden md:flex md:flex-row md:gap-5"
     )}>
-      {navItems.map(({ href, label, icon: Icon }) => (
-        <Link
-          key={href}
-          href={href}
-          onClick={() => isMobile && setSheetOpen(false)}
-          className={cn(
-            'transition-colors hover:text-primary flex items-center gap-2',
-            pathname === href ? 'text-primary' : 'text-muted-foreground',
-            isMobile && 'text-lg'
-          )}
-        >
-          <Icon className="h-5 w-5" />
-          {label}
-        </Link>
-      ))}
+      {navItems.map(({ href, label, icon: Icon }) => {
+        const isLoading = loadingPath === href;
+        const isCurrent = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            onClick={(e) => {
+              if (isCurrent) e.preventDefault();
+              handleLinkClick(href);
+            }}
+            className={cn(
+              'transition-colors hover:text-primary flex items-center gap-2',
+              isCurrent && !isLoading ? 'text-primary' : 'text-muted-foreground',
+              isLoading && 'pointer-events-none text-muted-foreground',
+              isMobile && 'text-lg'
+            )}
+            aria-disabled={isLoading}
+            tabIndex={isLoading ? -1 : undefined}
+          >
+            {isLoading ? <Loader2 className="h-5 w-5 animate-spin" /> : <Icon className="h-5 w-5" />}
+            {label}
+          </Link>
+        )
+      })}
     </nav>
   );
 
@@ -70,7 +95,7 @@ export function Navbar() {
             </SheetTrigger>
             <SheetContent side="left">
                 <SheetHeader>
-                    <SheetTitle className='sr-only'>Navigation Menu</SheetTitle>
+                    <SheetTitle>Navigation Menu</SheetTitle>
                 </SheetHeader>
               <Link href="/" className="flex items-center gap-2 text-lg font-semibold mb-4 text-primary">
                 <IndianRupee className="h-6 w-6" />
@@ -78,7 +103,7 @@ export function Navbar() {
               </Link>
               {navLinks(true)}
               <Link href="/add-expense" passHref>
-                <Button className="w-full mt-8" onClick={() => setSheetOpen(false)}>
+                <Button className="w-full mt-8" onClick={() => handleLinkClick('/add-expense')}>
                   <PlusCircle className="mr-2 h-4 w-4" /> Add Expense
                 </Button>
               </Link>
