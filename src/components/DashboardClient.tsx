@@ -8,9 +8,10 @@ import { RecentExpenses } from './RecentExpenses';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { PlusCircle } from 'lucide-react';
+import { UpcomingReminders } from './UpcomingReminders';
 
 export function DashboardClient() {
-  const { expenses, settings, categories, loading } = useExpenses();
+  const { expenses, settings, categories, reminders, loading } = useExpenses();
 
   if (loading) {
     return (
@@ -22,11 +23,12 @@ export function DashboardClient() {
           <Skeleton className="h-[126px]" />
         </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-          <div className="lg:col-span-4">
+          <div className="lg:col-span-4 space-y-4">
             <Skeleton className="h-[350px]" />
           </div>
-          <div className="lg:col-span-3">
-            <Skeleton className="h-[350px]" />
+          <div className="lg:col-span-3 space-y-4">
+            <Skeleton className="h-[250px]" />
+            <Skeleton className="h-[250px]" />
           </div>
         </div>
       </div>
@@ -49,8 +51,9 @@ export function DashboardClient() {
         <div className="lg:col-span-4">
            <RecentExpenses expenses={expenses} categories={categories} />
         </div>
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-4">
           <BudgetTracker expenses={expenses} settings={settings} />
+          <UpcomingReminders reminders={reminders} />
         </div>
       </div>
     </div>
