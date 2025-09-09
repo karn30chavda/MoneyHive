@@ -19,14 +19,19 @@ const formatCurrency = (amount: number | bigint) => {
     }).format(numAmount);
 };
 
-const CustomTooltipContent = ({ active, payload }: any) => {
+const CustomTooltipContent = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      const isDailyChart = 'date' in data;
+      const tooltipLabel = isDailyChart ? data.date : data.name;
+      const tooltipValue = payload[0].value;
+
       return (
         <div className="bg-background border border-border p-2 rounded-lg shadow-sm">
-          <p className="label font-medium">{payload[0].name}</p>
+          <p className="label font-medium">{tooltipLabel}</p>
           <p className="intro flex items-center">
             <IndianRupee className="h-4 w-4 mr-1" />
-            {formatCurrency(payload[0].value)}
+            {formatCurrency(tooltipValue)}
           </p>
         </div>
       );
