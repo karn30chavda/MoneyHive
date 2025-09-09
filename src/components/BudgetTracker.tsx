@@ -5,13 +5,21 @@ import type { Expense, Settings } from '@/types';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { startOfMonth, isAfter, parseISO } from 'date-fns';
+import { IndianRupee } from 'lucide-react';
 
 interface BudgetTrackerProps {
   expenses: Expense[];
   settings: Settings;
 }
 
-const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
+
 
 export function BudgetTracker({ expenses, settings }: BudgetTrackerProps) {
   const { monthlyBudget } = settings;
@@ -48,15 +56,15 @@ export function BudgetTracker({ expenses, settings }: BudgetTrackerProps) {
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          <div className="flex justify-between font-medium">
-            <span>{formatCurrency(monthTotal)}</span>
-            <span className="text-muted-foreground">of {formatCurrency(monthlyBudget)}</span>
+          <div className="flex justify-between font-medium items-center">
+            <span className="flex items-center"><IndianRupee className="h-4 w-4 mr-1" />{formatCurrency(monthTotal)}</span>
+            <span className="text-muted-foreground flex items-center">of <IndianRupee className="h-4 w-4 mx-1" />{formatCurrency(monthlyBudget)}</span>
           </div>
           <Progress value={progress > 100 ? 100 : progress} className={isExceeded ? '[&>div]:bg-destructive' : ''}/>
-          <p className={`text-sm ${isExceeded ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+          <p className={`text-sm ${isExceeded ? 'text-destructive font-medium' : 'text-muted-foreground'} flex items-center`}>
             {isExceeded 
-              ? `${formatCurrency(Math.abs(remaining))} over budget`
-              : `${formatCurrency(remaining)} remaining`
+              ? <><IndianRupee className="h-3 w-3 mr-1" />{`${formatCurrency(Math.abs(remaining))} over budget`}</>
+              : <><IndianRupee className="h-3 w-3 mr-1" />{`${formatCurrency(remaining)} remaining`}</>
             }
           </p>
         </div>

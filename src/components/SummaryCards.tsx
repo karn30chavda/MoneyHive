@@ -12,8 +12,7 @@ interface SummaryCardsProps {
 
 const formatCurrency = (amount: number) => {
   return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: 'INR',
+    style: 'decimal',
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   }).format(amount);
@@ -54,7 +53,10 @@ export function SummaryCards({ expenses }: SummaryCardsProps) {
           <IndianRupee className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(todayTotal)}</div>
+          <div className="text-2xl font-bold flex items-center">
+            <IndianRupee className="h-6 w-6 mr-1" />
+            {formatCurrency(todayTotal)}
+            </div>
           <p className="text-xs text-muted-foreground">Total for today</p>
         </CardContent>
       </Card>
@@ -64,7 +66,10 @@ export function SummaryCards({ expenses }: SummaryCardsProps) {
           <IndianRupee className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(weekTotal)}</div>
+          <div className="text-2xl font-bold flex items-center">
+            <IndianRupee className="h-6 w-6 mr-1" />
+            {formatCurrency(weekTotal)}
+            </div>
           <p className="text-xs text-muted-foreground">Total for this week</p>
         </CardContent>
       </Card>
@@ -74,7 +79,10 @@ export function SummaryCards({ expenses }: SummaryCardsProps) {
           <IndianRupee className="h-4 w-4 text-muted-foreground" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold">{formatCurrency(monthTotal)}</div>
+          <div className="text-2xl font-bold flex items-center">
+            <IndianRupee className="h-6 w-6 mr-1" />
+            {formatCurrency(monthTotal)}
+            </div>
           <p className="text-xs text-muted-foreground">Total for this month</p>
         </CardContent>
       </Card>

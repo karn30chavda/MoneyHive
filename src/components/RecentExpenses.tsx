@@ -5,11 +5,17 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, IndianRupee } from 'lucide-react';
 import { format } from 'date-fns';
 import type { Expense, Category } from '@/types';
 
-const formatCurrency = (amount: number) => `₹${amount.toFixed(2)}`;
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
 
 interface RecentExpensesProps {
   expenses: Expense[];
@@ -49,7 +55,10 @@ export function RecentExpenses({ expenses, categories }: RecentExpensesProps) {
                   <TableCell className="font-medium">{expense.title}</TableCell>
                   <TableCell className="hidden sm:table-cell">{categoryMap.get(expense.categoryId) || 'Uncategorized'}</TableCell>
                   <TableCell className="hidden md:table-cell">{format(new Date(expense.date), 'PP')}</TableCell>
-                  <TableCell className="text-right">{formatCurrency(expense.amount)}</TableCell>
+                  <TableCell className="text-right flex items-center justify-end">
+                    <IndianRupee className="h-4 w-4 mr-1" />
+                    {formatCurrency(expense.amount)}
+                  </TableCell>
                 </TableRow>
               ))
             ) : (

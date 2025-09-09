@@ -6,17 +6,38 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
 import { Bar, BarChart, Pie, PieChart, ResponsiveContainer, XAxis, YAxis, Cell } from 'recharts';
 import { subDays, format, parseISO, startOfDay } from 'date-fns';
+import { IndianRupee } from 'lucide-react';
 
 const COLORS = ['#2563eb', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe', '#eff6ff'];
 
-const formatCurrency = (amount: number) => {
+const formatCurrency = (amount: number | bigint) => {
+    const numAmount = Number(amount);
     return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
+      style: 'decimal',
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
-    }).format(amount);
+    }).format(numAmount);
+};
+
+const CustomTooltipContent = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-background border border-border p-2 rounded-lg shadow-sm">
+          <p className="label font-medium">{`${label}`}</p>
+          <p className="intro flex items-center">
+            <IndianRupee className="h-4 w-4 mr-1" />
+            {formatCurrency(payload[0].value)}
+          </p>
+        </div>
+      );
+    }
+    return null;
   };
+
+interface ExpenseChartsProps {
+    expenses: Expense[];
+    categories: Category[];
+}
 
 export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   const categorySpending = useMemo(() => {
@@ -59,6 +80,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
   const chartConfig = {
     amount: {
       label: 'Amount',
+      icon: IndianRupee,
     },
   };
 
@@ -72,7 +94,7 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
           <ChartContainer config={chartConfig} className="w-full h-[250px] sm:h-[300px]">
             <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel formatter={(value) => formatCurrency(value as number)} />} />
+                  <ChartTooltip content={<CustomTooltipContent />} />
                   <Pie data={categorySpending} dataKey="value" nameKey="name" innerRadius="30%" strokeWidth={2}>
                       {categorySpending.map((_, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -92,8 +114,8 @@ export function ExpenseCharts({ expenses, categories }: ExpenseChartsProps) {
             <ResponsiveContainer>
               <BarChart accessibilityLayer data={dailySpending} margin={{ top: 20, right: 20, bottom: 5, left: 0 }}>
                 <XAxis dataKey="date" tickLine={false} axisLine={false} tickMargin={8} />
-                <YAxis tickFormatter={(value) => formatCurrency(value as number).split('.')[0]} width={60} />
-                <ChartTooltip content={<ChartTooltipContent formatter={(value) => formatCurrency(value as number)} />} />
+                <YAxis tickFormatter={(value) => `${formatCurrency(value as number).split('.')[0]}`} width={60} />
+                <ChartTooltip content={<CustomTooltipContent />} />
                 <Bar dataKey="amount" fill="hsl(var(--primary))" radius={8} />
               </BarChart>
             </ResponsiveContainer>

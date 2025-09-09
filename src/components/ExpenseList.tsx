@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, X } from 'lucide-react';
+import { Trash2, Edit, X, IndianRupee } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -15,7 +15,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { ExpenseForm } from './ExpenseForm';
 import type { Expense, Category } from '@/types';
 
-const formatCurrency = (amount: number) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount);
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
 
 export function ExpenseList() {
   const { expenses, categories, deleteExpense, loading } = useExpenses();
@@ -109,7 +115,10 @@ export function ExpenseList() {
                 filteredExpenses.map(expense => (
                   <TableRow key={expense.id}>
                     <TableCell className="font-medium">{expense.title}</TableCell>
-                    <TableCell>{formatCurrency(expense.amount)}</TableCell>
+                    <TableCell className="flex items-center">
+                        <IndianRupee className="h-4 w-4 mr-1" />
+                        {formatCurrency(expense.amount)}
+                    </TableCell>
                     <TableCell>{categoryMap.get(expense.categoryId) || 'Uncategorized'}</TableCell>
                     <TableCell>{format(new Date(expense.date), 'PP')}</TableCell>
                     <TableCell>{expense.paymentMode}</TableCell>
