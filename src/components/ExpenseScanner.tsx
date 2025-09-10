@@ -5,11 +5,10 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/componen
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { scanExpenses } from '@/ai/flows/scan-expenses-flow';
 import type { ScannedExpense } from '@/ai/flows/scan-expenses-flow';
 import { useExpenses } from '@/hooks/use-expenses';
-import { Loader2, Upload, Camera, PlusCircle, Trash2, CalendarIcon } from 'lucide-react';
+import { Loader2, Upload, Camera, PlusCircle, Trash2, CalendarIcon, IndianRupee } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { Expense, PaymentMode } from '@/types';
@@ -18,9 +17,19 @@ import { Popover, PopoverTrigger, PopoverContent } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Label } from '@/components/ui/label';
 
 type EditableExpense = Omit<Expense, 'id'>;
 const paymentModes: PaymentMode[] = ['Cash', 'UPI', 'Card', 'Other'];
+
+const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('en-IN', {
+        style: 'decimal',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    }).format(amount);
+};
 
 
 export function ExpenseScanner() {
@@ -213,68 +222,86 @@ export function ExpenseScanner() {
                     <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                 </div>
             ) : editableExpenses.length > 0 ? (
-                <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="min-w-[150px]">Title</TableHead>
-                    <TableHead className="min-w-[100px]">Amount</TableHead>
-                    <TableHead className="min-w-[200px]">Date</TableHead>
-                    <TableHead className="min-w-[150px]">Category</TableHead>
-                    <TableHead className="min-w-[150px]">Payment Mode</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {editableExpenses.map((expense, index) => (
-                    <TableRow key={index}>
-                      <TableCell><Input value={expense.title} onChange={(e) => handleExpenseChange(index, 'title', e.target.value)} /></TableCell>
-                      <TableCell><Input type="number" value={expense.amount} onChange={(e) => handleExpenseChange(index, 'amount', parseFloat(e.target.value) || 0)} /></TableCell>
-                      <TableCell>
-                        <Popover>
-                            <PopoverTrigger asChild>
-                                <Button
-                                    variant="outline"
-                                    className={cn('w-full justify-start text-left font-normal',!expense.date && 'text-muted-foreground')}
-                                >
-                                    <CalendarIcon className="mr-2 h-4 w-4" />
-                                    {expense.date ? format(new Date(expense.date), 'PPP') : <span>Pick a date</span>}
-                                </Button>
-                            </PopoverTrigger>
-                            <PopoverContent className="w-auto p-0">
-                                <Calendar
-                                    mode="single"
-                                    selected={new Date(expense.date)}
-                                    onSelect={(date) => handleExpenseChange(index, 'date', date?.toISOString() || '')}
-                                    initialFocus
-                                />
-                            </PopoverContent>
-                        </Popover>
-                      </TableCell>
-                      <TableCell>
-                        <Select value={String(expense.categoryId)} onValueChange={(value) => handleExpenseChange(index, 'categoryId', Number(value))}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                      </TableCell>
-                       <TableCell>
-                        <Select value={expense.paymentMode} onValueChange={(value) => handleExpenseChange(index, 'paymentMode', value as PaymentMode)}>
-                            <SelectTrigger><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                                {paymentModes.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="icon" onClick={() => removeExpense(index)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              </div>
+              <Accordion type="single" collapsible className="w-full space-y-2">
+                {editableExpenses.map((expense, index) => (
+                  <AccordionItem value={`item-${index}`} key={index} className="border rounded-md px-4">
+                    <AccordionTrigger>
+                        <div className="flex justify-between w-full pr-4">
+                            <span className="font-medium">{expense.title}</span>
+                            <span className="flex items-center font-semibold">
+                                <IndianRupee className="h-4 w-4 mr-1" />
+                                {formatCurrency(expense.amount)}
+                            </span>
+                        </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="pt-2">
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor={`title-${index}`}>Title</Label>
+                                    <Input id={`title-${index}`} value={expense.title} onChange={(e) => handleExpenseChange(index, 'title', e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`amount-${index}`}>Amount</Label>
+                                    <Input id={`amount-${index}`} type="number" value={expense.amount} onChange={(e) => handleExpenseChange(index, 'amount', parseFloat(e.target.value) || 0)} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                     <Label htmlFor={`date-${index}`}>Date</Label>
+                                    <Popover>
+                                        <PopoverTrigger asChild>
+                                            <Button
+                                                id={`date-${index}`}
+                                                variant="outline"
+                                                className={cn('w-full justify-start text-left font-normal',!expense.date && 'text-muted-foreground')}
+                                            >
+                                                <CalendarIcon className="mr-2 h-4 w-4" />
+                                                {expense.date ? format(new Date(expense.date), 'PPP') : <span>Pick a date</span>}
+                                            </Button>
+                                        </PopoverTrigger>
+                                        <PopoverContent className="w-auto p-0">
+                                            <Calendar
+                                                mode="single"
+                                                selected={new Date(expense.date)}
+                                                onSelect={(date) => handleExpenseChange(index, 'date', date?.toISOString() || '')}
+                                                initialFocus
+                                            />
+                                        </PopoverContent>
+                                    </Popover>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor={`category-${index}`}>Category</Label>
+                                    <Select value={String(expense.categoryId)} onValueChange={(value) => handleExpenseChange(index, 'categoryId', Number(value))}>
+                                        <SelectTrigger id={`category-${index}`}><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {categories.map(c => <SelectItem key={c.id} value={String(c.id)}>{c.name}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor={`payment-${index}`}>Payment Mode</Label>
+                                    <Select value={expense.paymentMode} onValueChange={(value) => handleExpenseChange(index, 'paymentMode', value as PaymentMode)}>
+                                        <SelectTrigger id={`payment-${index}`}><SelectValue /></SelectTrigger>
+                                        <SelectContent>
+                                            {paymentModes.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                                <div className="flex items-end">
+                                     <Button variant="ghost" size="icon" className="text-destructive hover:text-destructive" onClick={() => removeExpense(index)}>
+                                        <Trash2 className="h-4 w-4" />
+                                        <span className="sr-only">Delete</span>
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             ) : (
                 <div className="text-center py-10 text-muted-foreground">
                     <p>Scanned expenses will appear here.</p>
