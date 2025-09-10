@@ -17,7 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useExpenses } from '@/hooks/use-expenses';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import type { Expense, PaymentMode } from '@/types';
 import { CalendarIcon, PlusCircle, Pen } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -63,14 +63,18 @@ export function ExpenseForm({
   const [newCategory, setNewCategory] = useState('');
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
 
+  const defaultCategoryId = useMemo(() => {
+    return categories.find(c => c.name === 'Miscellaneous')?.id ?? categories[0]?.id;
+  }, [categories]);
+
   const defaultValues = expenseToEdit
     ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
     : {
         title: '',
         amount: undefined,
         date: new Date(),
-        paymentMode: undefined,
-        categoryId: undefined,
+        paymentMode: 'Other' as PaymentMode,
+        categoryId: defaultCategoryId,
       };
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -86,10 +90,14 @@ export function ExpenseForm({
         amount: expenseToEdit.amount,
       });
     } else {
-      form.reset(defaultValues);
+        if (defaultCategoryId && !form.getValues('categoryId')) {
+            form.reset({
+                ...defaultValues,
+                categoryId: defaultCategoryId
+            });
+        }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [expenseToEdit, form]);
+  }, [expenseToEdit, form, defaultCategoryId, defaultValues]);
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -310,7 +318,7 @@ export function ExpenseForm({
 export default function AddExpensePageClient() {
   const searchParams = useSearchParams();
   const expenseId = searchParams.get('id');
-  const { getExpenseById } = useExpenses();
+  const { getExpenseById, loading: expensesLoading } = useExpenses();
   const [expenseToEdit, setExpenseToEdit] = useState<Expense | undefined>(
     undefined,
   );
@@ -330,7 +338,7 @@ export default function AddExpensePageClient() {
     }
   }, [expenseId, getExpenseById]);
 
-  if (loading) {
+  if (loading || expensesLoading) {
     return <p>Loading...</p>;
   }
 

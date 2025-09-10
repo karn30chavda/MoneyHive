@@ -1,9 +1,9 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import * as db from '@/lib/db';
 import type { Expense, Category, Settings, Reminder } from '@/types';
-import { isPast, startOfToday } from 'date-fns';
+import { isPast, isToday } from 'date-fns';
 
 const events = new EventTarget();
 
@@ -17,11 +17,16 @@ export function useExpenses() {
   const [settings, setSettings] = useState<Settings>({ id: 1, monthlyBudget: 0 });
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [loading, setLoading] = useState(true);
+  const isInitialLoadComplete = useRef(false);
 
-  const refreshData = useCallback(async () => {
+  const refreshData = useCallback(async (isInitialLoad = false) => {
+    if (!isInitialLoad && !isInitialLoadComplete.current) {
+        // If it's not the initial load but the initial load hasn't completed, do nothing.
+        // This prevents re-fetching when navigating between pages before the first load is done.
+        return;
+    }
     setLoading(true);
     try {
-      // Fetch all data
       const [expensesData, categoriesData, settingsData, rawRemindersData] = await Promise.all([
         db.getExpenses(),
         db.getCategories(),
@@ -29,15 +34,18 @@ export function useExpenses() {
         db.getReminders(),
       ]);
 
-      // Auto-delete past reminders
-      const today = startOfToday();
+      const today = new Date();
+      today.setHours(0,0,0,0);
       const pastReminderIds = rawRemindersData
-        .filter(r => isPast(new Date(r.dueDate)) && !isToday(new Date(r.dueDate)))
+        .filter(r => {
+            const dueDate = new Date(r.dueDate)
+            dueDate.setHours(0,0,0,0)
+            return isPast(dueDate) && !isToday(dueDate);
+        })
         .map(r => r.id!);
       
       if (pastReminderIds.length > 0) {
         await db.deleteMultipleReminders(pastReminderIds);
-        // Refetch reminders after deletion
         const finalRemindersData = await db.getReminders();
         setReminders(finalRemindersData);
       } else {
@@ -47,6 +55,10 @@ export function useExpenses() {
       setExpenses(expensesData.reverse());
       setCategories(categoriesData);
       setSettings(settingsData);
+      
+      if(isInitialLoad) {
+        isInitialLoadComplete.current = true;
+      }
 
     } catch (error) {
       console.error('Failed to load or clean data from DB', error);
@@ -56,10 +68,13 @@ export function useExpenses() {
   }, []);
 
   useEffect(() => {
-    refreshData();
-    events.addEventListener('db-updated', refreshData);
+    refreshData(true); // Mark this as the initial load
+    
+    const handleDbUpdate = () => refreshData(false); // Subsequent updates are not initial loads
+    events.addEventListener('db-updated', handleDbUpdate);
+    
     return () => {
-      events.removeEventListener('db-updated', refreshData);
+      events.removeEventListener('db-updated', handleDbUpdate);
     };
   }, [refreshData]);
 
