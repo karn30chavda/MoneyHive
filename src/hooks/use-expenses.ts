@@ -68,7 +68,9 @@ export function useExpenses() {
   }, []);
 
   useEffect(() => {
-    refreshData(true); // Mark this as the initial load
+    if (!isInitialLoadComplete.current) {
+      refreshData(true); // Mark this as the initial load
+    }
     
     const handleDbUpdate = () => refreshData(false); // Subsequent updates are not initial loads
     events.addEventListener('db-updated', handleDbUpdate);
@@ -80,48 +82,57 @@ export function useExpenses() {
 
   const addExpense = useCallback(async (expense: Omit<Expense, 'id'>) => {
     await db.addExpense(expense);
+    notifyDbUpdate();
   }, []);
 
   const addMultipleExpenses = useCallback(async (newExpenses: Omit<Expense, 'id'>[]) => {
-    for (const expense of newExpenses) {
-        await db.addExpense(expense);
-    }
+    await db.addMultipleExpenses(newExpenses);
+    notifyDbUpdate();
   }, []);
 
   const updateExpense = useCallback(async (expense: Expense) => {
     await db.updateExpense(expense);
+    notifyDbUpdate();
   }, []);
 
   const deleteExpense = useCallback(async (id: number) => {
     await db.deleteExpense(id);
+    notifyDbUpdate();
   }, []);
 
   const deleteMultipleExpenses = useCallback(async (ids: number[]) => {
     await db.deleteMultipleExpenses(ids);
+    notifyDbUpdate();
   }, []);
 
   const clearExpenses = useCallback(async () => {
     await db.clearExpenses();
+    notifyDbUpdate();
   }, []);
 
   const addCategory = useCallback(async (category: Omit<Category, 'id'>) => {
     await db.addCategory(category);
+    notifyDbUpdate();
   }, []);
 
   const deleteCategory = useCallback(async (id: number) => {
     await db.deleteCategory(id);
+    notifyDbUpdate();
   }, []);
   
   const saveSettings = useCallback(async (newSettings: Settings) => {
     await db.saveSettings(newSettings);
+    notifyDbUpdate();
   }, []);
 
   const addReminder = useCallback(async (reminder: Omit<Reminder, 'id'>) => {
     await db.addReminder(reminder);
+    notifyDbUpdate();
   }, []);
 
   const deleteReminder = useCallback(async (id: number) => {
     await db.deleteReminder(id);
+    notifyDbUpdate();
   }, []);
 
   return {

@@ -2,7 +2,6 @@
 import type { DBSchema, IDBPDatabase } from 'idb';
 import { openDB } from 'idb';
 import type { Expense, Category, Settings, Reminder } from '@/types';
-import { notifyDbUpdate } from '@/hooks/use-expenses';
 
 const DB_NAME = 'MoneyHiveDB';
 const DB_VERSION = 2; // Incremented version for schema change
@@ -79,7 +78,12 @@ async function getDb() {
 export const addExpense = async (expense: Omit<Expense, 'id'>) => {
   const db = await getDb();
   await db.add('expenses', expense as Expense);
-  notifyDbUpdate();
+};
+
+export const addMultipleExpenses = async (expenses: Omit<Expense, 'id'>[]) => {
+  const db = await getDb();
+  const tx = db.transaction('expenses', 'readwrite');
+  await Promise.all([...expenses.map(exp => tx.store.add(exp as Expense)), tx.done]);
 };
 
 export const getExpenses = async () => {
@@ -90,20 +94,17 @@ export const getExpenses = async () => {
 export const updateExpense = async (expense: Expense) => {
   const db = await getDb();
   await db.put('expenses', expense);
-  notifyDbUpdate();
 };
 
 export const deleteExpense = async (id: number) => {
   const db = await getDb();
   await db.delete('expenses', id);
-  notifyDbUpdate();
 };
 
 export const deleteMultipleExpenses = async (ids: number[]) => {
   const db = await getDb();
   const tx = db.transaction('expenses', 'readwrite');
   await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
-  notifyDbUpdate();
 };
 
 export const getExpenseById = async (id: number) => {
@@ -114,14 +115,12 @@ export const getExpenseById = async (id: number) => {
 export const clearExpenses = async () => {
     const db = await getDb();
     await db.clear('expenses');
-    notifyDbUpdate();
 }
 
 // Categories
 export const addCategory = async (category: Omit<Category, 'id'>) => {
   const db = await getDb();
   await db.add('categories', category as Category);
-  notifyDbUpdate();
 };
 
 export const getCategories = async () => {
@@ -132,7 +131,6 @@ export const getCategories = async () => {
 export const deleteCategory = async (id: number) => {
   const db = await getDb();
   await db.delete('categories', id);
-  notifyDbUpdate();
 };
 
 // Settings
@@ -145,14 +143,12 @@ export const getSettings = async (): Promise<Settings> => {
 export const saveSettings = async (settings: Settings) => {
   const db = await getDb();
   await db.put('settings', { ...settings, id: 1 });
-  notifyDbUpdate();
 };
 
 // Reminders
 export const addReminder = async (reminder: Omit<Reminder, 'id'>) => {
   const db = await getDb();
   await db.add('reminders', reminder as Reminder);
-  notifyDbUpdate();
 };
 
 export const getReminders = async (): Promise<Reminder[]> => {
@@ -163,7 +159,6 @@ export const getReminders = async (): Promise<Reminder[]> => {
 export const deleteReminder = async (id: number) => {
   const db = await getDb();
   await db.delete('reminders', id);
-  notifyDbUpdate();
 };
 
 export const deleteMultipleReminders = async (ids: number[]) => {
