@@ -30,7 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <link rel="apple-touch-icon" href="/icon.svg" />
+        <link rel="apple-touch-icon" href="/icon-192x192.png" />
         <ClientOnlyPwaSetup />
       </head>
       <body className={`${ptSans.variable} font-sans antialiased`}>

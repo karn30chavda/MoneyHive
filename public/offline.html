@@ -1,41 +1,48 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offline - MoneyHive</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f0f2f5;
-            color: #1c1e21;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-            text-align: center;
-        }
-        .container {
-            max-width: 400px;
-            padding: 20px;
-        }
-        h1 {
-            font-size: 24px;
-            font-weight: 600;
-            margin-bottom: 16px;
-        }
-        p {
-            font-size: 16px;
-            color: #606770;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MoneyHive - Offline</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background-color: #f8f9fa;
+      color: #343a40;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      text-align: center;
+      flex-direction: column;
+    }
+    .container {
+      max-width: 400px;
+      padding: 2rem;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 1rem;
+    }
+    p {
+      font-size: 1rem;
+      color: #6c757d;
+    }
+    svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem;
+        color: #dee2e6;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>You're Offline</h1>
-        <p>It looks like you've lost your connection. Please check your internet settings and try again.</p>
-        <p>Your already saved data is available once you're back online.</p>
-    </div>
+  <div class="container">
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.7 12.3a1 1 0 0 0-1.4 1.4l4 4a1 1 0 0 0 1.4 0l4-4a1 1 0 0 0-1.4-1.4l-3 3-3-3z"/><path d="m13.7 6.3-4 4a1 1 0 0 0 0 1.4l4 4a1 1 0 0 0 1.4 0l4-4a1 1 0 0 0 0-1.4l-4-4a1 1 0 0 0-1.4 0z"/><path d="M12 12h.01"/></svg>
+    <h1>You're Offline</h1>
+    <p>It seems you've lost your connection. Don't worry, most of MoneyHive works offline.</p>
+    <p>Please check your internet connection to use features like the AI scanner.</p>
+  </div>
 </body>
 </html>
