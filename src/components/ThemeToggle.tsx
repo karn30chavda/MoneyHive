@@ -6,8 +6,10 @@ import { Button } from '@/components/ui/button';
 
 export function ThemeToggle() {
   const [theme, setTheme] = useState('light');
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     const savedTheme = localStorage.getItem('theme') || 'light';
     setTheme(savedTheme);
     document.documentElement.classList.toggle('dark', savedTheme === 'dark');
@@ -19,6 +21,11 @@ export function ThemeToggle() {
     localStorage.setItem('theme', newTheme);
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
+
+  if (!mounted) {
+    // Render a placeholder or nothing until the component is mounted on the client
+    return <div className="h-10 w-10" />;
+  }
 
   return (
     <Button variant="ghost" size="icon" onClick={toggleTheme}>
