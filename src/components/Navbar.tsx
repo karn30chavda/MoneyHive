@@ -50,7 +50,10 @@ export function Navbar() {
           <Link
             key={href}
             href={href}
-            onClick={() => handleLinkClick(href)}
+            onClick={(e) => {
+              if (isCurrent) e.preventDefault();
+              handleLinkClick(href);
+            }}
             className={cn(
               'transition-colors hover:text-primary flex items-center gap-2',
               isCurrent ? 'text-primary' : 'text-muted-foreground',
