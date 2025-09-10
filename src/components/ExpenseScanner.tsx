@@ -184,8 +184,12 @@ export function ExpenseScanner() {
           <CardContent className="space-y-6">
             <Tabs defaultValue="upload" className="w-full" onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="upload"><Upload className="mr-2 h-4 w-4"/> Upload File</TabsTrigger>
-                    <TabsTrigger value="camera"><Camera className="mr-2 h-4 w-4"/> Use Camera</TabsTrigger>
+                    <TabsTrigger value="upload" className="flex items-center gap-2">
+                        <Upload className="h-4 w-4"/> Upload File
+                    </TabsTrigger>
+                    <TabsTrigger value="camera" className="flex items-center gap-2">
+                        <Camera className="h-4 w-4"/> Use Camera
+                    </TabsTrigger>
                 </TabsList>
                 <TabsContent value="upload">
                     <div className="mt-4 border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 flex flex-col items-center justify-center text-center h-64">
