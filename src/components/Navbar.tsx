@@ -1,4 +1,3 @@
-
 'use client';
 
 import Link from 'next/link';
@@ -29,7 +28,7 @@ export function Navbar() {
   }, []);
 
   useEffect(() => {
-    if (loadingPath) {
+    if (loadingPath && loadingPath === pathname) {
       setLoadingPath(null);
     }
   }, [pathname, loadingPath]);
@@ -48,7 +47,7 @@ export function Navbar() {
     )}>
       {navItems.map(({ href, label, icon: Icon }) => {
         const isLoading = loadingPath === href && pathname !== href;
-        // Only determine isCurrent on the client after mounting
+        // Only determine isCurrent on the client after mounting to avoid hydration mismatch
         const isCurrent = mounted && !isLoading && pathname === href; 
         
         return (
