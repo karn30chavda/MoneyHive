@@ -40,6 +40,7 @@ export function ExpenseScanner() {
   const { toast } = useToast();
   const [editableExpenses, setEditableExpenses] = useState<EditableExpense[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -157,7 +158,7 @@ export function ExpenseScanner() {
 
   const handleSaveExpenses = async () => {
     if (editableExpenses.length === 0) return;
-    setIsLoading(true);
+    setIsSaving(true);
     try {
       await addMultipleExpenses(editableExpenses);
       toast({ title: 'Success', description: `${editableExpenses.length} expenses have been added.` });
@@ -166,7 +167,7 @@ export function ExpenseScanner() {
       console.error(error);
       toast({ variant: 'destructive', title: 'Save Failed', description: 'Could not save the scanned expenses.' });
     } finally {
-      setIsLoading(false);
+      setIsSaving(false);
     }
   };
 
@@ -352,9 +353,8 @@ export function ExpenseScanner() {
             )}
           </CardContent>
           <CardFooter>
-              <Button onClick={handleSaveExpenses} disabled={editableExpenses.length === 0 || isLoading} className="w-full">
-                {isLoading && <Loader2 className="mr-2 animate-spin" />}
-                <PlusCircle className="mr-2" />
+              <Button onClick={handleSaveExpenses} disabled={editableExpenses.length === 0 || isSaving} className="w-full">
+                {isSaving ? <Loader2 className="mr-2 animate-spin" /> : <PlusCircle className="mr-2" />}
                 Add to My Expenses
               </Button>
           </CardFooter>
