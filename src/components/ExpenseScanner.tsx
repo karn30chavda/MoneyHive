@@ -46,6 +46,7 @@ export function ExpenseScanner() {
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
   const [openDatePickerIndex, setOpenDatePickerIndex] = useState<number | null>(null);
+  const [activeTab, setActiveTab] = useState('upload');
 
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export function ExpenseScanner() {
           console.error('Error accessing camera:', error);
           setHasCameraPermission(false);
           setIsCameraOn(false);
+          setActiveTab('upload');
           toast({
             variant: 'destructive',
             title: 'Camera Access Denied',
@@ -79,6 +81,7 @@ export function ExpenseScanner() {
   }, [isCameraOn]);
   
   const handleTabChange = (value: string) => {
+      setActiveTab(value);
       setIsCameraOn(value === 'camera');
   }
 
@@ -147,6 +150,9 @@ export function ExpenseScanner() {
     if(fileInputRef.current) {
         fileInputRef.current.value = '';
     }
+    if (activeTab === 'camera' && !isCameraOn) {
+        setIsCameraOn(true);
+    }
   }
 
   const handleSaveExpenses = async () => {
@@ -183,7 +189,7 @@ export function ExpenseScanner() {
             <CardTitle>1. Provide an Image</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
-            <Tabs defaultValue="upload" className="w-full" onValueChange={handleTabChange}>
+            <Tabs value={activeTab} onValueChange={handleTabChange}>
                 <TabsList className="grid w-full grid-cols-2">
                     <TabsTrigger value="upload" className="flex items-center gap-2">
                         <Upload className="h-4 w-4"/> Upload File
