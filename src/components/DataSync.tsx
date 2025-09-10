@@ -150,6 +150,29 @@ export function DataSync() {
             onChange={handleFileChange}
           />
         </div>
+         <div>
+          <h4 className="font-medium mb-2 text-destructive">Clear Data</h4>
+           <p className="text-sm text-muted-foreground mb-2">Permanently delete all your expense data. This action cannot be undone.</p>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={loading || expenses.length === 0}>
+                <Trash2 className="mr-2 h-4 w-4" /> Clear All Expenses
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action will permanently delete all of your expense data. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleClearExpenses}>Yes, delete all</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </div>
       </CardContent>
     </Card>
   );

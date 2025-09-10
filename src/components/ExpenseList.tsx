@@ -21,7 +21,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Checkbox } from '@/components/ui/checkbox';
 
 
 const formatCurrency = (amount: number) => {
@@ -42,13 +41,12 @@ const PaymentModeIcon = ({ mode }: { mode: string }) => {
 };
 
 export function ExpenseList() {
-  const { expenses, categories, deleteExpense, deleteMultipleExpenses, loading } = useExpenses();
+  const { expenses, categories, deleteExpense, loading } = useExpenses();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState<'newest' | 'oldest'>('newest');
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
-  const [selectedExpenses, setSelectedExpenses] = useState<number[]>([]);
 
   const categoryMap = useMemo(() => {
     const map = new Map<number, string>();
@@ -69,14 +67,6 @@ export function ExpenseList() {
         return sortOrder === 'newest' ? dateB - dateA : dateA - b.id!;
       });
   }, [expenses, searchTerm, categoryFilter, sortOrder]);
-  
-  const handleSelectAll = (checked: boolean | 'indeterminate') => {
-    if(checked) {
-      setSelectedExpenses(filteredExpenses.map(e => e.id!));
-    } else {
-      setSelectedExpenses([]);
-    }
-  };
 
   const handleDelete = async (id: number) => {
     try {
@@ -86,17 +76,6 @@ export function ExpenseList() {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete expense.' });
     }
   };
-
-  const handleBulkDelete = async () => {
-    try {
-      await deleteMultipleExpenses(selectedExpenses);
-      toast({ title: 'Success', description: `${selectedExpenses.length} expenses deleted.` });
-      setSelectedExpenses([]);
-    } catch {
-       toast({ variant: 'destructive', title: 'Error', description: 'Failed to delete selected expenses.' });
-    }
-  };
-
 
   if (loading) {
     return <p>Loading expenses...</p>;
@@ -161,70 +140,21 @@ export function ExpenseList() {
             </SelectContent>
           </Select>
         </div>
-        {selectedExpenses.length > 0 && (
-          <div className="mt-4 flex justify-between items-center bg-muted/50 p-3 rounded-lg">
-            <span className="text-sm font-medium">{selectedExpenses.length} expense(s) selected</span>
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="mr-2 h-4 w-4" /> Delete Selected
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This will permanently delete {selectedExpenses.length} expense(s). This action cannot be undone.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleBulkDelete}>Yes, delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          </div>
-        )}
       </CardHeader>
       <CardContent>
         {filteredExpenses.length > 0 ? (
           <Accordion type="single" collapsible className="w-full">
-            <div className="flex items-center gap-4 px-4 py-2 border-b">
-                 <Checkbox 
-                  id="select-all"
-                  checked={selectedExpenses.length > 0 && selectedExpenses.length === filteredExpenses.length}
-                  onCheckedChange={handleSelectAll}
-                  aria-label="Select all expenses"
-                />
-                <label htmlFor='select-all' className='text-sm font-medium text-muted-foreground'>Select All</label>
-            </div>
             {filteredExpenses.map(expense => (
               <AccordionItem value={`item-${expense.id}`} key={expense.id}>
-                <div className="flex items-center w-full hover:bg-muted/50 rounded-md">
-                    <div className="pl-4 py-4">
-                      <Checkbox
-                          id={`select-${expense.id}`}
-                          checked={selectedExpenses.includes(expense.id!)}
-                          onCheckedChange={(checked) => {
-                            if(checked) {
-                              setSelectedExpenses(prev => [...prev, expense.id!]);
-                            } else {
-                              setSelectedExpenses(prev => prev.filter(id => id !== expense.id!));
-                            }
-                          }}
-                          onClick={(e) => e.stopPropagation()}
-                        />
+                <AccordionTrigger className="hover:no-underline p-4">
+                    <div className="flex justify-between w-full items-center">
+                        <span className="font-medium">{expense.title}</span>
+                        <span className="flex items-center font-semibold">
+                        <IndianRupee className="h-4 w-4 mr-1" />
+                        {formatCurrency(expense.amount)}
+                        </span>
                     </div>
-                    <AccordionTrigger className="flex-1 hover:no-underline p-4">
-                        <div className="flex justify-between w-full items-center">
-                            <span className="font-medium">{expense.title}</span>
-                            <span className="flex items-center font-semibold">
-                            <IndianRupee className="h-4 w-4 mr-1" />
-                            {formatCurrency(expense.amount)}
-                            </span>
-                        </div>
-                    </AccordionTrigger>
-                </div>
+                </AccordionTrigger>
                 <AccordionContent>
                   <div className="px-4 pb-4 space-y-3">
                     <div className="flex justify-between text-sm text-muted-foreground">
