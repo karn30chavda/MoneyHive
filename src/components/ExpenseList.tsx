@@ -146,12 +146,14 @@ export function ExpenseList() {
           <Accordion type="single" collapsible className="w-full">
             {filteredExpenses.map(expense => (
               <AccordionItem value={`item-${expense.id}`} key={expense.id} className="border-b">
-                 <AccordionTrigger className="flex justify-between w-full hover:no-underline p-4 hover:bg-muted/50 rounded-md transition-colors">
-                    <span className="font-medium truncate pr-4">{expense.title}</span>
-                    <span className="flex items-center font-semibold shrink-0">
-                    <IndianRupee className="h-4 w-4 mr-1" />
-                    {formatCurrency(expense.amount)}
-                    </span>
+                 <AccordionTrigger className="hover:no-underline p-4 hover:bg-muted/50 rounded-md transition-colors">
+                    <div className="flex justify-between w-full">
+                      <span className="font-medium truncate pr-4">{expense.title}</span>
+                      <span className="flex items-center font-semibold shrink-0 ml-auto">
+                        <IndianRupee className="h-4 w-4 mr-1" />
+                        {formatCurrency(expense.amount)}
+                      </span>
+                    </div>
                  </AccordionTrigger>
                 <AccordionContent>
                   <div className="px-4 pb-4 space-y-3">
