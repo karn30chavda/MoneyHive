@@ -45,6 +45,7 @@ export function ExpenseScanner() {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
   const [hasCameraPermission, setHasCameraPermission] = useState<boolean | null>(null);
+  const [openDatePickerIndex, setOpenDatePickerIndex] = useState<number | null>(null);
 
 
   useEffect(() => {
@@ -282,7 +283,7 @@ export function ExpenseScanner() {
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                      <Label htmlFor={`date-${index}`}>Date</Label>
-                                    <Popover>
+                                    <Popover open={openDatePickerIndex === index} onOpenChange={(isOpen) => setOpenDatePickerIndex(isOpen ? index : null)}>
                                         <PopoverTrigger asChild>
                                             <Button
                                                 id={`date-${index}`}
@@ -297,7 +298,10 @@ export function ExpenseScanner() {
                                             <Calendar
                                                 mode="single"
                                                 selected={new Date(expense.date)}
-                                                onSelect={(date) => handleExpenseChange(index, 'date', date?.toISOString() || '')}
+                                                onSelect={(date) => {
+                                                    handleExpenseChange(index, 'date', date?.toISOString() || '');
+                                                    setOpenDatePickerIndex(null);
+                                                }}
                                                 initialFocus
                                             />
                                         </PopoverContent>
