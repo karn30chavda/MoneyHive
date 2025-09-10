@@ -86,6 +86,10 @@ export function ExpenseScanner() {
   };
   
   const handleScanImage = async () => {
+    if (!navigator.onLine) {
+        toast({ variant: 'destructive', title: 'Offline', description: 'An internet connection is required to use the AI scanner.' });
+        return;
+    }
     if (!imagePreview) {
         toast({ variant: 'destructive', title: 'No Image', description: 'Please select an image to scan.' });
         return;
@@ -320,3 +324,5 @@ export function ExpenseScanner() {
     </div>
   );
 }
+
+    
