@@ -78,7 +78,7 @@ export function Navbar() {
       <div className="hidden md:flex md:flex-1 md:items-center md:justify-center">
         {navLinks()}
       </div>
-      <div className="flex w-full items-center justify-end gap-4 md:w-auto md:ml-auto">
+      <div className="flex flex-1 items-center justify-end gap-4 md:flex-initial">
         <ThemeToggle />
         <div className="md:hidden">
           <Sheet open={isSheetOpen} onOpenChange={setSheetOpen}>
