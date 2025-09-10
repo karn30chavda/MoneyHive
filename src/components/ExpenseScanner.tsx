@@ -3,12 +3,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { scanExpenses } from '@/ai/flows/scan-expenses-flow';
 import type { ScannedExpense } from '@/ai/flows/scan-expenses-flow';
 import { useExpenses } from '@/hooks/use-expenses';
-import { Loader2, Upload, Camera, PlusCircle, Trash2, CalendarIcon, IndianRupee } from 'lucide-react';
+import { Loader2, Upload, Camera, PlusCircle, Trash2, CalendarIcon, IndianRupee, ImageUp, CircleX } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import type { Expense, PaymentMode } from '@/types';
@@ -19,6 +18,9 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+
 
 type EditableExpense = Omit<Expense, 'id'>;
 const paymentModes: PaymentMode[] = ['Cash', 'UPI', 'Card', 'Other'];
@@ -72,7 +74,12 @@ export function ExpenseScanner() {
       }
     };
     getCameraPermission();
-  }, [isCameraOn, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isCameraOn]);
+  
+  const handleTabChange = (value: string) => {
+      setIsCameraOn(value === 'camera');
+  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -133,6 +140,13 @@ export function ExpenseScanner() {
       }
     }
   };
+  
+  const resetImage = () => {
+    setImagePreview(null);
+    if(fileInputRef.current) {
+        fileInputRef.current.value = '';
+    }
+  }
 
   const handleSaveExpenses = async () => {
     if (editableExpenses.length === 0) return;
@@ -167,27 +181,32 @@ export function ExpenseScanner() {
           <CardHeader>
             <CardTitle>1. Provide an Image</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-4 items-start">
-              <div className="flex-1 min-w-[200px] space-y-4">
-                  <Button onClick={() => fileInputRef.current?.click()} className="w-full">
-                    <Upload className="mr-2" /> Upload Image
-                  </Button>
-                  <Input
-                    type="file"
-                    ref={fileInputRef}
-                    className="hidden"
-                    accept="image/*"
-                    onChange={handleFileChange}
-                  />
-                  <Button onClick={() => setIsCameraOn(prev => !prev)} variant="outline" className="w-full">
-                    <Camera className="mr-2" /> {isCameraOn ? 'Close Camera' : 'Open Camera'}
-                  </Button>
-              </div>
-              <div className="flex-1 min-w-[200px]">
-                {isCameraOn && (
-                    <div className="space-y-2">
-                        <video ref={videoRef} className="w-full aspect-video rounded-md bg-muted" autoPlay muted playsInline />
+          <CardContent className="space-y-6">
+            <Tabs defaultValue="upload" className="w-full" onValueChange={handleTabChange}>
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="upload"><Upload className="mr-2 h-4 w-4"/> Upload File</TabsTrigger>
+                    <TabsTrigger value="camera"><Camera className="mr-2 h-4 w-4"/> Use Camera</TabsTrigger>
+                </TabsList>
+                <TabsContent value="upload">
+                    <div className="mt-4 border-2 border-dashed border-muted-foreground/30 rounded-lg p-8 flex flex-col items-center justify-center text-center h-64">
+                         <ImageUp className="h-12 w-12 text-muted-foreground" />
+                        <h3 className="mt-4 text-lg font-medium">Click to upload or drag and drop</h3>
+                        <p className="mt-1 text-sm text-muted-foreground">PNG, JPG, GIF up to 10MB</p>
+                        <Button type="button" variant="outline" className="mt-4" onClick={() => fileInputRef.current?.click()}>
+                           Browse Files
+                        </Button>
+                        <Input 
+                            ref={fileInputRef} 
+                            type="file" 
+                            className="hidden" 
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                    </div>
+                </TabsContent>
+                <TabsContent value="camera">
+                     <div className="mt-4 space-y-2 bg-muted rounded-md p-2">
+                        <video ref={videoRef} className="w-full aspect-video rounded-md" autoPlay muted playsInline />
                         {hasCameraPermission === false && (
                             <Alert variant="destructive">
                                 <AlertTitle>Camera Access Required</AlertTitle>
@@ -196,18 +215,24 @@ export function ExpenseScanner() {
                                 </AlertDescription>
                             </Alert>
                         )}
-                        <Button onClick={handleCapture} className="w-full" disabled={!hasCameraPermission}>Capture Photo</Button>
+                        <Button onClick={handleCapture} className="w-full" disabled={!hasCameraPermission}>
+                            <Camera className="mr-2 h-4 w-4"/> Capture Photo
+                        </Button>
                     </div>
-                )}
-                {imagePreview && !isCameraOn && (
-                    <div className="mt-4 md:mt-0">
+                </TabsContent>
+            </Tabs>
+            {imagePreview && (
+                <div className="mt-4">
                     <h3 className="font-semibold mb-2">Image Preview:</h3>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={imagePreview} alt="Expense list preview" className="rounded-md max-h-64 w-auto" />
-                    </div>
-                )}
-              </div>
-            </div>
+                     <div className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={imagePreview} alt="Expense list preview" className="rounded-md max-h-64 w-auto mx-auto" />
+                        <Button variant="ghost" size="icon" className="absolute top-2 right-2 bg-background/50 hover:bg-background/80" onClick={resetImage}>
+                            <CircleX className="h-5 w-5" />
+                        </Button>
+                     </div>
+                </div>
+            )}
           </CardContent>
           <CardFooter>
             <Button onClick={handleScanImage} disabled={!imagePreview || isLoading} className="w-full">
