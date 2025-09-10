@@ -19,7 +19,7 @@ const ScanExpensesInputSchema = z.object({
 });
 export type ScanExpensesInput = z.infer<typeof ScanExpensesInputSchema>;
 
-export const ScannedExpenseSchema = z.object({
+const ScannedExpenseSchema = z.object({
     title: z.string().describe('The name or description of the expense item.'),
     amount: z.number().describe('The cost of the expense item.'),
 });
