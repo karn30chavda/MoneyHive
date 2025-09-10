@@ -64,7 +64,7 @@ export function ExpenseList() {
       .sort((a, b) => {
         const dateA = new Date(a.date).getTime();
         const dateB = new Date(b.date).getTime();
-        return sortOrder === 'newest' ? dateB - dateA : dateA - b;
+        return sortOrder === 'newest' ? dateB - dateA : dateA - b.id!;
       });
   }, [expenses, searchTerm, categoryFilter, sortOrder]);
 
