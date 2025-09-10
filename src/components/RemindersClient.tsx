@@ -55,19 +55,35 @@ export function RemindersClient() {
   }, []);
 
   const requestNotificationPermission = async () => {
-    if (!('Notification' in window)) return;
+    if (!('Notification' in window)) {
+        toast({ variant: 'destructive', title: 'Unsupported', description: 'Notifications are not supported in this browser.' });
+        return;
+    };
     const permission = await Notification.requestPermission();
     setNotificationPermission(permission);
     if (permission === 'granted') {
       toast({ title: "Permissions Granted", description: "You will now receive reminders." });
       scheduleNextDayReminders();
     } else {
-      toast({ variant: 'destructive', title: "Permissions Denied", description: "You won't receive notifications." });
+      toast({ variant: 'destructive', title: "Permissions Denied", description: "You won't receive notifications for upcoming expenses." });
     }
   };
 
+  const showTestNotification = async (reminder: Omit<Reminder, 'id'>) => {
+      if (Notification.permission !== 'granted') return;
+
+      const registration = await navigator.serviceWorker.ready;
+      registration.showNotification('Test: Reminder Added', {
+          body: `${reminder.title} for ${formatCurrency(reminder.amount)} is due on ${format(new Date(reminder.dueDate), 'PP')}.`,
+          icon: '/icon-192x192.png',
+          badge: '/badge-72x72.png',
+          tag: `reminder-test-${Date.now()}`,
+          data: { url: '/reminders' },
+      });
+  }
+
   const scheduleNextDayReminders = async () => {
-    if (Notification.permission !== 'granted') return;
+    if (Notification.permission !== 'granted' || !navigator.serviceWorker) return;
 
     const registration = await navigator.serviceWorker.ready;
     const tomorrow = startOfTomorrow();
@@ -87,7 +103,11 @@ export function RemindersClient() {
   };
 
   useEffect(() => {
-    scheduleNextDayReminders();
+    const intervalId = setInterval(() => {
+        scheduleNextDayReminders();
+    }, 1000 * 60 * 60 * 24); // Check once a day
+
+    return () => clearInterval(intervalId);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reminders]);
 
@@ -95,16 +115,25 @@ export function RemindersClient() {
     resolver: zodResolver(reminderSchema),
     defaultValues: {
       title: '',
-      amount: 0,
+      amount: undefined,
       dueDate: new Date(),
     },
   });
 
   async function onSubmit(values: z.infer<typeof reminderSchema>) {
     try {
-      await addReminder({ ...values, dueDate: values.dueDate.toISOString() });
+      const newReminder = { ...values, dueDate: values.dueDate.toISOString() };
+      await addReminder(newReminder);
       toast({ title: 'Success', description: 'Reminder added.' });
-      form.reset();
+      
+      // Show test notification immediately
+      showTestNotification(newReminder);
+
+      form.reset({
+        title: '',
+        amount: undefined,
+        dueDate: new Date(),
+      });
     } catch {
       toast({ variant: 'destructive', title: 'Error', description: 'Failed to add reminder.' });
     }
@@ -184,12 +213,8 @@ export function RemindersClient() {
                             type="number" 
                             step="0.01" 
                             placeholder="0.00" 
-                            {...field} 
-                            onFocus={(e) => {
-                                if (field.value === 0) {
-                                    form.setValue('amount', '' as any);
-                                }
-                            }}
+                            {...field}
+                            value={field.value ?? ''}
                           />
                       </FormControl>
                       <FormMessage />
@@ -219,8 +244,8 @@ export function RemindersClient() {
                             mode="single" 
                             selected={field.value} 
                             onSelect={(date) => {
-                                field.onChange(date)
-                                setDatePickerOpen(false)
+                                if (date) field.onChange(date);
+                                setDatePickerOpen(false);
                             }}
                             initialFocus 
                           />
