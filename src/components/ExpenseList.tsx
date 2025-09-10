@@ -145,21 +145,17 @@ export function ExpenseList() {
         {filteredExpenses.length > 0 ? (
           <Accordion type="single" collapsible className="w-full">
             {filteredExpenses.map(expense => (
-              <AccordionItem value={`item-${expense.id}`} key={expense.id}>
-                 <div className="flex items-center w-full hover:bg-muted/50 rounded-md">
-                    <AccordionTrigger className="flex-1 hover:no-underline p-4">
-                        <div className="flex justify-between w-full items-center">
-                            <span className="font-medium">{expense.title}</span>
-                            <span className="flex items-center font-semibold">
-                            <IndianRupee className="h-4 w-4 mr-1" />
-                            {formatCurrency(expense.amount)}
-                            </span>
-                        </div>
-                    </AccordionTrigger>
-                 </div>
+              <AccordionItem value={`item-${expense.id}`} key={expense.id} className="border-b">
+                 <AccordionTrigger className="flex justify-between w-full hover:no-underline p-4 hover:bg-muted/50 rounded-md transition-colors">
+                    <span className="font-medium truncate pr-4">{expense.title}</span>
+                    <span className="flex items-center font-semibold shrink-0">
+                    <IndianRupee className="h-4 w-4 mr-1" />
+                    {formatCurrency(expense.amount)}
+                    </span>
+                 </AccordionTrigger>
                 <AccordionContent>
                   <div className="px-4 pb-4 space-y-3">
-                    <div className="flex justify-between text-sm text-muted-foreground">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-y-2 gap-x-4 text-sm text-muted-foreground pt-2">
                         <div className="flex items-center gap-2">
                             <Tag className="h-4 w-4"/>
                             <span>{categoryMap.get(expense.categoryId) || 'Uncategorized'}</span>
