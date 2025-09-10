@@ -30,13 +30,13 @@ export function DataSync() {
 
   const categoryMap = new Map(categories.map(c => [c.id, c.name]));
 
-  const handleExport = (format: 'json' | 'pdf') => {
+  const handleExport = (formatType: 'json' | 'pdf') => {
     if (expenses.length === 0) {
       toast({ variant: 'destructive', title: 'No Data', description: 'There is no expense data to export.' });
       return;
     }
   
-    if (format === 'json') {
+    if (formatType === 'json') {
       const exportableExpenses = expenses.map(({ id, ...rest }) => rest);
       const data = JSON.stringify(exportableExpenses, null, 2);
       const blob = new Blob([data], { type: 'application/json' });
@@ -67,7 +67,7 @@ export function DataSync() {
         doc.save(`moneyhive_expenses_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
-    toast({ title: 'Success', description: `Data exported as ${format.toUpperCase()}.` });
+    toast({ title: 'Success', description: `Data exported as ${formatType.toUpperCase()}.` });
   };
   
   const handleImportClick = () => {
