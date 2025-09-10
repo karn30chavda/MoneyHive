@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as db from '@/lib/db';
 import type { Expense, Category, Settings, Reminder } from '@/types';
-import type { ScannedExpense } from '@/ai/flows/scan-expenses-flow';
 
 const events = new EventTarget();
 
@@ -50,19 +49,11 @@ export function useExpenses() {
     await db.addExpense(expense);
   }, []);
 
-  const addMultipleExpenses = useCallback(async (scannedExpenses: ScannedExpense[]) => {
-    const uncategorized = categories.find(c => c.name === 'Miscellaneous');
-    const newExpenses: Omit<Expense, 'id'>[] = scannedExpenses.map(exp => ({
-        ...exp,
-        date: new Date().toISOString(),
-        categoryId: uncategorized?.id || 1, // Default to Miscellaneous or first category
-        paymentMode: 'Other',
-    }));
-
+  const addMultipleExpenses = useCallback(async (newExpenses: Omit<Expense, 'id'>[]) => {
     for (const expense of newExpenses) {
         await db.addExpense(expense);
     }
-  }, [categories]);
+  }, []);
 
   const updateExpense = useCallback(async (expense: Expense) => {
     await db.updateExpense(expense);
