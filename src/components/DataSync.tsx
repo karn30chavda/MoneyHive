@@ -3,7 +3,7 @@
 import { useExpenses } from '@/hooks/use-expenses';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, Trash2 } from 'lucide-react';
+import { Download, Upload, Trash2, FileScan } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
 import {
@@ -17,45 +17,56 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { format } from 'date-fns';
+import Link from 'next/link';
 
 
 export function DataSync() {
-  const { expenses, addMultipleExpenses, clearExpenses, loading } = useExpenses();
+  const { expenses, addMultipleExpenses, clearExpenses, loading, categories } = useExpenses();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleExport = (format: 'json' | 'csv') => {
+  const categoryMap = new Map(categories.map(c => [c.id, c.name]));
+
+  const handleExport = (format: 'json' | 'pdf') => {
     if (expenses.length === 0) {
       toast({ variant: 'destructive', title: 'No Data', description: 'There is no expense data to export.' });
       return;
     }
-
-    let data;
-    let mimeType;
-    let fileExtension;
-
+  
     if (format === 'json') {
       const exportableExpenses = expenses.map(({ id, ...rest }) => rest);
-      data = JSON.stringify(exportableExpenses, null, 2);
-      mimeType = 'application/json';
-      fileExtension = 'json';
-    } else {
-      const header = ['title', 'amount', 'date', 'categoryId', 'paymentMode'];
-      const rows = expenses.map(e => [e.title, e.amount, e.date, e.categoryId, e.paymentMode].join(','));
-      data = [header.join(','), ...rows].join('\n');
-      mimeType = 'text/csv';
-      fileExtension = 'csv';
+      const data = JSON.stringify(exportableExpenses, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `moneyhive_expenses_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } else { // PDF export
+        const doc = new jsPDF();
+        doc.text("MoneyHive Expense Report", 14, 16);
+        (doc as any).autoTable({
+          startY: 22,
+          head: [['Date', 'Title', 'Category', 'Payment Mode', 'Amount']],
+          body: expenses.map(e => [
+            format(new Date(e.date), 'PP'),
+            e.title,
+            categoryMap.get(e.categoryId) || 'N/A',
+            e.paymentMode,
+            e.amount.toFixed(2)
+          ]),
+          styles: { fontSize: 10 },
+          headStyles: { fillColor: [22, 163, 74] }, // Green
+        });
+        doc.save(`moneyhive_expenses_${new Date().toISOString().split('T')[0]}.pdf`);
     }
 
-    const blob = new Blob([data], { type: mimeType });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `moneyhive_expenses_${new Date().toISOString().split('T')[0]}.${fileExtension}`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
     toast({ title: 'Success', description: `Data exported as ${format.toUpperCase()}.` });
   };
   
@@ -131,14 +142,14 @@ export function DataSync() {
             <Button variant="outline" onClick={() => handleExport('json')} disabled={loading || expenses.length === 0}>
               <Download className="mr-2 h-4 w-4" /> Export as JSON
             </Button>
-            <Button variant="outline" onClick={() => handleExport('csv')} disabled={loading || expenses.length === 0}>
-              <Download className="mr-2 h-4 w-4" /> Export as CSV
+            <Button variant="outline" onClick={() => handleExport('pdf')} disabled={loading || expenses.length === 0}>
+              <Download className="mr-2 h-4 w-4" /> Export as PDF
             </Button>
           </div>
         </div>
         <div>
           <h4 className="font-medium mb-2">Import Data</h4>
-          <p className="text-sm text-muted-foreground mb-2">Restore expenses from a JSON backup. This will merge the imported expenses with your current list.</p>
+          <p className="text-sm text-muted-foreground mb-2">Restore expenses from a JSON backup. This will merge with your current expenses.</p>
           <Button variant="outline" onClick={handleImportClick} disabled={loading}>
             <Upload className="mr-2 h-4 w-4" /> Import from JSON
           </Button>
@@ -149,6 +160,15 @@ export function DataSync() {
             accept="application/json"
             onChange={handleFileChange}
           />
+        </div>
+        <div>
+          <h4 className="font-medium mb-2">Import from Image</h4>
+          <p className="text-sm text-muted-foreground mb-2">Use the AI scanner to add expenses from a photo of a receipt or list.</p>
+          <Button variant="outline" asChild>
+            <Link href="/scan">
+              <FileScan className="mr-2 h-4 w-4" /> Go to Scanner
+            </Link>
+          </Button>
         </div>
          <div>
           <h4 className="font-medium mb-2 text-destructive">Clear Data</h4>
