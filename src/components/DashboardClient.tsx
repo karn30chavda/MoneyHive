@@ -7,7 +7,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RecentExpenses } from './RecentExpenses';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, ScanLine } from 'lucide-react';
 import { UpcomingReminders } from './UpcomingReminders';
 
 export function DashboardClient() {
@@ -39,12 +39,20 @@ export function DashboardClient() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <Link href="/add-expense" passHref>
-          <Button>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            New Expense
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          <Link href="/scan" passHref>
+            <Button variant="outline">
+              <ScanLine className="mr-2 h-4 w-4" />
+              Scan Expenses
+            </Button>
+          </Link>
+          <Link href="/add-expense" passHref>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              New Expense
+            </Button>
+          </Link>
+        </div>
       </div>
       <SummaryCards expenses={expenses} />
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

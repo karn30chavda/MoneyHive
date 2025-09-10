@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag, PlusCircle } from 'lucide-react';
+import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag, PlusCircle, ScanLine } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -79,12 +79,20 @@ export function ExpenseList() {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Expense History</CardTitle>
-          <Link href="/add-expense" passHref>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Expense
-            </Button>
-          </Link>
+          <div className="flex gap-2">
+            <Link href="/scan" passHref>
+              <Button variant="outline">
+                <ScanLine className="mr-2 h-4 w-4" />
+                Scan Expenses
+              </Button>
+            </Link>
+            <Link href="/add-expense" passHref>
+              <Button>
+                <PlusCircle className="mr-2 h-4 w-4" />
+                New Expense
+              </Button>
+            </Link>
+          </div>
         </div>
         <div className="mt-4 flex flex-col md:flex-row gap-4">
           <Input
