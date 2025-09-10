@@ -1,3 +1,4 @@
+
 'use client';
 
 import Link from 'next/link';
@@ -21,21 +22,23 @@ export function Navbar() {
   const pathname = usePathname();
   const [isSheetOpen, setSheetOpen] = useState(false);
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // This effect runs when the path changes, i.e., navigation is complete.
+    setMounted(true);
+  }, []);
+
+  useEffect(() => {
     if (loadingPath) {
       setLoadingPath(null);
     }
-    // No dependency on loadingPath to avoid re-running when loadingPath is set.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [pathname]);
+  }, [pathname, loadingPath]);
 
   const handleLinkClick = (href: string) => {
     if (pathname !== href) {
       setLoadingPath(href);
     }
-    setSheetOpen(false); // Always close sheet on navigation
+    setSheetOpen(false);
   };
   
   const navLinks = (isMobile = false) => (
@@ -45,7 +48,9 @@ export function Navbar() {
     )}>
       {navItems.map(({ href, label, icon: Icon }) => {
         const isLoading = loadingPath === href && pathname !== href;
-        const isCurrent = !isLoading && pathname === href;
+        // Only determine isCurrent on the client after mounting
+        const isCurrent = mounted && !isLoading && pathname === href; 
+        
         return (
           <Link
             key={href}
