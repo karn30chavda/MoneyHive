@@ -12,6 +12,18 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { CategoryManager } from '@/components/CategoryManager';
 import { DataSync } from '@/components/DataSync';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Trash2 } from 'lucide-react';
 
 const settingsSchema = z.object({
   monthlyBudget: z.coerce.number().min(0, 'Budget must be a positive number.'),
@@ -70,6 +82,52 @@ function BudgetSettingsForm() {
   );
 }
 
+function ClearDataCard() {
+    const { expenses, clearExpenses, loading } = useExpenses();
+    const { toast } = useToast();
+
+    const handleClearExpenses = async () => {
+        try {
+        await clearExpenses();
+        toast({ title: 'Success', description: 'All expense data has been deleted.' });
+        } catch {
+        toast({ variant: 'destructive', title: 'Error', description: 'Failed to clear expenses.' });
+        }
+    };
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle>Clear Data</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <p className="text-sm text-muted-foreground mb-4">
+                    Permanently delete all of your expense data. This action cannot be undone.
+                </p>
+                <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={loading || expenses.length === 0}>
+                        <Trash2 className="mr-2 h-4 w-4" /> Clear All Expenses
+                    </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                        This action cannot be undone. This will permanently delete all your expense data from your device.
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancel</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleClearExpenses}>Yes, delete everything</AlertDialogAction>
+                    </AlertDialogFooter>
+                    </AlertDialogContent>
+                </AlertDialog>
+            </CardContent>
+        </Card>
+    );
+}
+
 export default function SettingsPage() {
   return (
     <div className="space-y-8">
@@ -78,6 +136,7 @@ export default function SettingsPage() {
         <div className="space-y-8">
             <BudgetSettingsForm />
             <DataSync />
+            <ClearDataCard />
         </div>
         <div>
             <CategoryManager />

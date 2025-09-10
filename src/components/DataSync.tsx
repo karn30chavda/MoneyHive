@@ -3,14 +3,24 @@
 import { useExpenses } from '@/hooks/use-expenses';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Download, Upload } from 'lucide-react';
+import { Download, Upload, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRef } from 'react';
-import type { Expense } from '@/types';
-import * as db from '@/lib/db';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+
 
 export function DataSync() {
-  const { expenses, addExpense, addMultipleExpenses, loading } = useExpenses();
+  const { expenses, addMultipleExpenses, clearExpenses, loading } = useExpenses();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -96,6 +106,15 @@ export function DataSync() {
       }
     };
     reader.readAsText(file);
+  };
+  
+  const handleClearExpenses = async () => {
+    try {
+      await clearExpenses();
+      toast({ title: 'Success', description: 'All expense data has been deleted.' });
+    } catch {
+      toast({ variant: 'destructive', title: 'Error', description: 'Failed to clear expenses.' });
+    }
   };
 
 

@@ -63,6 +63,10 @@ export function useExpenses() {
     await db.deleteExpense(id);
   }, []);
 
+  const clearExpenses = useCallback(async () => {
+    await db.clearExpenses();
+  }, []);
+
   const addCategory = useCallback(async (category: Omit<Category, 'id'>) => {
     await db.addCategory(category);
   }, []);
@@ -94,6 +98,7 @@ export function useExpenses() {
     updateExpense,
     deleteExpense,
     getExpenseById: db.getExpenseById,
+    clearExpenses,
     addCategory,
     deleteCategory,
     saveSettings,
