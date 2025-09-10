@@ -81,7 +81,7 @@ export function ExpenseList() {
           <CardTitle>Expense History</CardTitle>
           <div className="flex gap-2">
             <Link href="/scan" passHref>
-              <Button variant="outline">
+              <Button>
                 <ScanLine className="mr-2 h-4 w-4" />
                 Scan Expenses
               </Button>

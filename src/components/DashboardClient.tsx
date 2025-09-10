@@ -41,7 +41,7 @@ export function DashboardClient() {
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex gap-2">
           <Link href="/scan" passHref>
-            <Button variant="outline">
+            <Button>
               <ScanLine className="mr-2 h-4 w-4" />
               Scan Expenses
             </Button>
