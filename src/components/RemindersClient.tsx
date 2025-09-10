@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Trash2, CalendarIcon, IndianRupee, Bell } from 'lucide-react';
-import { format, isToday, isFuture, differenceInDays } from 'date-fns';
+import { format, isToday, isFuture, differenceInDays, startOfTomorrow, isSameDay } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -26,6 +26,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -45,6 +46,50 @@ export function RemindersClient() {
   const { reminders, addReminder, deleteReminder } = useExpenses();
   const { toast } = useToast();
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
+  const [notificationPermission, setNotificationPermission] = useState('default');
+
+  useEffect(() => {
+    if ('Notification' in window) {
+      setNotificationPermission(Notification.permission);
+    }
+  }, []);
+
+  const requestNotificationPermission = async () => {
+    if (!('Notification' in window)) return;
+    const permission = await Notification.requestPermission();
+    setNotificationPermission(permission);
+    if (permission === 'granted') {
+      toast({ title: "Permissions Granted", description: "You will now receive reminders." });
+      scheduleNextDayReminders();
+    } else {
+      toast({ variant: 'destructive', title: "Permissions Denied", description: "You won't receive notifications." });
+    }
+  };
+
+  const scheduleNextDayReminders = async () => {
+    if (Notification.permission !== 'granted') return;
+
+    const registration = await navigator.serviceWorker.ready;
+    const tomorrow = startOfTomorrow();
+    
+    reminders.forEach(reminder => {
+      const dueDate = new Date(reminder.dueDate);
+      if (isSameDay(dueDate, tomorrow)) {
+        registration.showNotification('Upcoming Expense Reminder', {
+          body: `${reminder.title} for ${formatCurrency(reminder.amount)} is due tomorrow.`,
+          icon: '/icon-192x192.png',
+          badge: '/badge-72x72.png',
+          tag: `reminder-${reminder.id}`,
+          data: { url: '/reminders' },
+        });
+      }
+    });
+  };
+
+  useEffect(() => {
+    scheduleNextDayReminders();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [reminders]);
 
   const form = useForm<z.infer<typeof reminderSchema>>({
     resolver: zodResolver(reminderSchema),
@@ -90,7 +135,23 @@ export function RemindersClient() {
 
   return (
     <div className="space-y-8">
-      <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2"><Bell/> Expense Reminders</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2"><Bell/> Expense Reminders</h1>
+        {notificationPermission === 'default' && (
+             <Button onClick={requestNotificationPermission}>Enable Notifications</Button>
+        )}
+      </div>
+
+      {notificationPermission === 'denied' && (
+        <Alert variant="destructive">
+            <Bell className="h-4 w-4" />
+            <AlertTitle>Notifications Disabled</AlertTitle>
+            <AlertDescription>
+                You have blocked notifications. To receive reminders, please enable them in your browser settings.
+            </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid gap-8 md:grid-cols-2">
         <Card>
           <CardHeader>

@@ -1,67 +1,43 @@
-
-const CACHE_NAME = 'moneyhive-cache-v2';
-const PRECACHE_ASSETS = [
-  '/',
-  '/expenses',
-  '/reports',
-  '/reminders',
-  '/settings',
-  '/add-expense',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-];
-
-
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        return cache.addAll(PRECACHE_ASSETS);
-      })
-      .catch(error => {
-        console.error('Failed to cache assets during install:', error);
-      })
-  );
+  event.waitUntil(self.skipWaiting());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheName !== CACHE_NAME) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  event.waitUntil(self.clients.claim());
 });
 
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
-  event.respondWith(
-    caches.open(CACHE_NAME).then(async (cache) => {
-      const cachedResponse = await cache.match(event.request);
-
-      const fetchPromise = fetch(event.request).then((networkResponse) => {
-        // If the request is successful, update the cache
-        if (networkResponse.ok) {
-            cache.put(event.request, networkResponse.clone());
+self.addEventListener('push', (event) => {
+    const data = event.data.json();
+    const title = data.title;
+    const options = {
+        body: data.body,
+        icon: '/icon-192x192.png',
+        badge: '/badge-72x72.png',
+        data: {
+            url: '/reminders'
         }
-        return networkResponse;
-      }).catch(err => {
-        // Fetch failed, probably offline
-        console.log('Fetch failed, returning cached response if available.', err);
-      });
+    };
+    event.waitUntil(self.registration.showNotification(title, options));
+});
 
-      // Return cached response immediately if available, otherwise wait for network
-      return cachedResponse || fetchPromise;
-    })
-  );
+self.addEventListener('notificationclick', (event) => {
+    event.notification.close();
+    const urlToOpen = event.notification.data.url || '/';
+    event.waitUntil(
+        clients.matchAll({
+            type: 'window',
+            includeUncontrolled: true
+        }).then((clientList) => {
+            if (clientList.length > 0) {
+                let client = clientList[0];
+                for (let i = 0; i < clientList.length; i++) {
+                    if (clientList[i].focused) {
+                        client = clientList[i];
+                    }
+                }
+                return client.focus().then(c => c.navigate(urlToOpen));
+            }
+            return clients.openWindow(urlToOpen);
+        })
+    );
 });
