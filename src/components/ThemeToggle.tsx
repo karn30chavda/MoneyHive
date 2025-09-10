@@ -9,9 +9,11 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    setTheme(savedTheme);
-    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    const savedTheme = localStorage.getItem('theme');
+    if (savedTheme) {
+      setTheme(savedTheme);
+      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
+    }
     setMounted(true);
   }, []);
 
@@ -21,10 +23,11 @@ export function ThemeToggle() {
     localStorage.setItem('theme', newTheme);
     document.documentElement.classList.toggle('dark', newTheme === 'dark');
   };
-  
+
   if (!mounted) {
-    // Render a placeholder to avoid layout shift, but not the button itself.
-    return <div className="h-10 w-10" />;
+    // To prevent hydration mismatch, render a placeholder button
+    // that is visually hidden and disabled.
+    return <Button variant="ghost" size="icon" disabled className="invisible" />;
   }
 
   return (
