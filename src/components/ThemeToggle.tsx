@@ -9,11 +9,9 @@ export function ThemeToggle() {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const savedTheme = localStorage.getItem('theme');
-    if (savedTheme) {
-      setTheme(savedTheme);
-      document.documentElement.classList.toggle('dark', savedTheme === 'dark');
-    }
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    setTheme(savedTheme);
+    document.documentElement.classList.toggle('dark', savedTheme === 'dark');
     setMounted(true);
   }, []);
 
@@ -25,9 +23,16 @@ export function ThemeToggle() {
   };
 
   if (!mounted) {
-    // To prevent hydration mismatch, render a placeholder button
-    // that is visually hidden and disabled.
-    return <Button variant="ghost" size="icon" disabled className="invisible" />;
+    // To prevent hydration mismatch, render a disabled button on the server
+    // and on the initial client render. The button will become interactive
+    // once the component has mounted.
+    return (
+      <Button variant="ghost" size="icon" disabled>
+        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+        <span className="sr-only">Toggle theme</span>
+      </Button>
+    );
   }
 
   return (
