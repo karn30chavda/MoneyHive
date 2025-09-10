@@ -165,3 +165,11 @@ export const deleteReminder = async (id: number) => {
   await db.delete('reminders', id);
   notifyDbUpdate();
 };
+
+export const deleteMultipleReminders = async (ids: number[]) => {
+    const db = await getDb();
+    const tx = db.transaction('reminders', 'readwrite');
+    await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
+    // This function is called within a refresh cycle, so we don't call notifyDbUpdate()
+    // to avoid an infinite loop. The caller is responsible for refreshing state.
+};

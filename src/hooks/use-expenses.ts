@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import * as db from '@/lib/db';
 import type { Expense, Category, Settings, Reminder } from '@/types';
+import { isPast, startOfToday } from 'date-fns';
 
 const events = new EventTarget();
 
@@ -20,18 +21,35 @@ export function useExpenses() {
   const refreshData = useCallback(async () => {
     setLoading(true);
     try {
-      const [expensesData, categoriesData, settingsData, remindersData] = await Promise.all([
+      // Fetch all data
+      const [expensesData, categoriesData, settingsData, rawRemindersData] = await Promise.all([
         db.getExpenses(),
         db.getCategories(),
         db.getSettings(),
         db.getReminders(),
       ]);
+
+      // Auto-delete past reminders
+      const today = startOfToday();
+      const pastReminderIds = rawRemindersData
+        .filter(r => isPast(new Date(r.dueDate)) && !isToday(new Date(r.dueDate)))
+        .map(r => r.id!);
+      
+      if (pastReminderIds.length > 0) {
+        await db.deleteMultipleReminders(pastReminderIds);
+        // Refetch reminders after deletion
+        const finalRemindersData = await db.getReminders();
+        setReminders(finalRemindersData);
+      } else {
+        setReminders(rawRemindersData);
+      }
+
       setExpenses(expensesData.reverse());
       setCategories(categoriesData);
       setSettings(settingsData);
-      setReminders(remindersData);
+
     } catch (error) {
-      console.error('Failed to load data from DB', error);
+      console.error('Failed to load or clean data from DB', error);
     } finally {
       setLoading(false);
     }

@@ -13,7 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useToast } from '@/hooks/use-toast';
 import { PlusCircle, Trash2, CalendarIcon, IndianRupee, Bell } from 'lucide-react';
-import { format, isToday, isFuture, differenceInDays, startOfTomorrow, isSameDay } from 'date-fns';
+import { format, isToday, isFuture, differenceInDays, startOfTomorrow, isSameDay, isTomorrow } from 'date-fns';
 import { cn } from '@/lib/utils';
 import {
   AlertDialog,
@@ -27,6 +27,7 @@ import {
   AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import type { Reminder } from '@/types';
 
 const reminderSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -42,17 +43,73 @@ const formatCurrency = (amount: number) => {
     }).format(amount);
 };
 
+// --- Service Worker and Notification Logic ---
+
+// Function to register the periodic background sync
+async function registerPeriodicSync() {
+  if ('serviceWorker' in navigator && 'PeriodicSyncManager' in window) {
+    const registration = await navigator.serviceWorker.ready;
+    try {
+      await (registration.periodicSync as any).register('check-reminders', {
+        minInterval: 12 * 60 * 60 * 1000, // 12 hours
+      });
+    } catch (error) {
+      console.error('Periodic sync registration failed:', error);
+    }
+  }
+}
+
+// Function to trigger notifications for due reminders
+async function checkAndNotifyReminders(reminders: Reminder[]) {
+    if (Notification.permission !== 'granted' || !navigator.serviceWorker) return;
+
+    const registration = await navigator.serviceWorker.ready;
+    
+    reminders.forEach(reminder => {
+      const dueDate = new Date(reminder.dueDate);
+      let notificationBody: string | null = null;
+
+      if (isToday(dueDate)) {
+        notificationBody = `${reminder.title} for ${formatCurrency(reminder.amount)} is due today.`;
+      } else if (isTomorrow(dueDate)) {
+        notificationBody = `${reminder.title} for ${formatCurrency(reminder.amount)} is due tomorrow.`;
+      }
+
+      if (notificationBody) {
+        registration.showNotification('Upcoming Expense Reminder', {
+          body: notificationBody,
+          icon: '/icon-192x192.png',
+          badge: '/badge-72x72.png',
+          tag: `reminder-${reminder.id}`,
+          data: { url: '/reminders' },
+        });
+      }
+    });
+}
+
+
 export function RemindersClient() {
-  const { reminders, addReminder, deleteReminder } = useExpenses();
+  const { reminders, addReminder, deleteReminder, loading } = useExpenses();
   const { toast } = useToast();
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
   const [notificationPermission, setNotificationPermission] = useState('default');
+
+  // --- Effects ---
 
   useEffect(() => {
     if ('Notification' in window) {
       setNotificationPermission(Notification.permission);
     }
   }, []);
+
+  // Effect to check reminders on component mount
+  useEffect(() => {
+    if (!loading && reminders.length > 0) {
+      checkAndNotifyReminders(reminders);
+    }
+  }, [reminders, loading]);
+
+  // --- Handlers ---
 
   const requestNotificationPermission = async () => {
     if (!('Notification' in window)) {
@@ -63,53 +120,12 @@ export function RemindersClient() {
     setNotificationPermission(permission);
     if (permission === 'granted') {
       toast({ title: "Permissions Granted", description: "You will now receive reminders." });
-      scheduleNextDayReminders();
+      registerPeriodicSync();
+      checkAndNotifyReminders(reminders); // Check immediately after permission is granted
     } else {
       toast({ variant: 'destructive', title: "Permissions Denied", description: "You won't receive notifications for upcoming expenses." });
     }
   };
-
-  const showTestNotification = async (reminder: Omit<Reminder, 'id'>) => {
-      if (Notification.permission !== 'granted') return;
-
-      const registration = await navigator.serviceWorker.ready;
-      registration.showNotification('Test: Reminder Added', {
-          body: `${reminder.title} for ${formatCurrency(reminder.amount)} is due on ${format(new Date(reminder.dueDate), 'PP')}.`,
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
-          tag: `reminder-test-${Date.now()}`,
-          data: { url: '/reminders' },
-      });
-  }
-
-  const scheduleNextDayReminders = async () => {
-    if (Notification.permission !== 'granted' || !navigator.serviceWorker) return;
-
-    const registration = await navigator.serviceWorker.ready;
-    const tomorrow = startOfTomorrow();
-    
-    reminders.forEach(reminder => {
-      const dueDate = new Date(reminder.dueDate);
-      if (isSameDay(dueDate, tomorrow)) {
-        registration.showNotification('Upcoming Expense Reminder', {
-          body: `${reminder.title} for ${formatCurrency(reminder.amount)} is due tomorrow.`,
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
-          tag: `reminder-${reminder.id}`,
-          data: { url: '/reminders' },
-        });
-      }
-    });
-  };
-
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-        scheduleNextDayReminders();
-    }, 1000 * 60 * 60 * 24); // Check once a day
-
-    return () => clearInterval(intervalId);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [reminders]);
 
   const form = useForm<z.infer<typeof reminderSchema>>({
     resolver: zodResolver(reminderSchema),
@@ -126,8 +142,8 @@ export function RemindersClient() {
       await addReminder(newReminder);
       toast({ title: 'Success', description: 'Reminder added.' });
       
-      // Show test notification immediately
-      showTestNotification(newReminder);
+      // Check if this new reminder should trigger an immediate notification
+      await checkAndNotifyReminders([newReminder as Reminder]);
 
       form.reset({
         title: '',
@@ -161,6 +177,8 @@ export function RemindersClient() {
       if (days === 1) return 'Due tomorrow';
       return `Due in ${days} days`;
   };
+
+  // --- JSX ---
 
   return (
     <div className="space-y-8">
