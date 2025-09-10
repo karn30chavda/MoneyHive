@@ -84,9 +84,9 @@ export function ExpenseList() {
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <CardTitle>Expense History</CardTitle>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
             <DropdownMenu>
               <div className="flex items-center rounded-md border border-input">
                 <Link href="/add-expense" passHref>
@@ -146,15 +146,17 @@ export function ExpenseList() {
           <Accordion type="single" collapsible className="w-full">
             {filteredExpenses.map(expense => (
               <AccordionItem value={`item-${expense.id}`} key={expense.id}>
-                <AccordionTrigger className="hover:no-underline p-4">
-                    <div className="flex justify-between w-full items-center">
-                        <span className="font-medium">{expense.title}</span>
-                        <span className="flex items-center font-semibold">
-                        <IndianRupee className="h-4 w-4 mr-1" />
-                        {formatCurrency(expense.amount)}
-                        </span>
-                    </div>
-                </AccordionTrigger>
+                 <div className="flex items-center w-full hover:bg-muted/50 rounded-md">
+                    <AccordionTrigger className="flex-1 hover:no-underline p-4">
+                        <div className="flex justify-between w-full items-center">
+                            <span className="font-medium">{expense.title}</span>
+                            <span className="flex items-center font-semibold">
+                            <IndianRupee className="h-4 w-4 mr-1" />
+                            {formatCurrency(expense.amount)}
+                            </span>
+                        </div>
+                    </AccordionTrigger>
+                 </div>
                 <AccordionContent>
                   <div className="px-4 pb-4 space-y-3">
                     <div className="flex justify-between text-sm text-muted-foreground">
