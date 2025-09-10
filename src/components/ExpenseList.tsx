@@ -189,7 +189,7 @@ export function ExpenseList() {
       <CardContent>
         {filteredExpenses.length > 0 ? (
           <Accordion type="single" collapsible className="w-full">
-            <div className="flex items-center gap-4 px-1 py-2 border-b">
+            <div className="flex items-center gap-4 px-4 py-2 border-b">
                  <Checkbox 
                   id="select-all"
                   checked={selectedExpenses.length > 0 && selectedExpenses.length === filteredExpenses.length}
@@ -200,9 +200,8 @@ export function ExpenseList() {
             </div>
             {filteredExpenses.map(expense => (
               <AccordionItem value={`item-${expense.id}`} key={expense.id}>
-                <AccordionTrigger className="hover:no-underline">
-                  <div className="flex justify-between w-full pr-4 items-center">
-                    <div className='flex items-center gap-4'>
+                <div className="flex items-center w-full hover:bg-muted/50 rounded-md">
+                    <div className="pl-4 py-4">
                       <Checkbox
                           id={`select-${expense.id}`}
                           checked={selectedExpenses.includes(expense.id!)}
@@ -215,16 +214,19 @@ export function ExpenseList() {
                           }}
                           onClick={(e) => e.stopPropagation()}
                         />
-                      <span className="font-medium">{expense.title}</span>
                     </div>
-                    <span className="flex items-center font-semibold">
-                      <IndianRupee className="h-4 w-4 mr-1" />
-                      {formatCurrency(expense.amount)}
-                    </span>
-                  </div>
-                </AccordionTrigger>
+                    <AccordionTrigger className="flex-1 hover:no-underline p-4">
+                        <div className="flex justify-between w-full items-center">
+                            <span className="font-medium">{expense.title}</span>
+                            <span className="flex items-center font-semibold">
+                            <IndianRupee className="h-4 w-4 mr-1" />
+                            {formatCurrency(expense.amount)}
+                            </span>
+                        </div>
+                    </AccordionTrigger>
+                </div>
                 <AccordionContent>
-                  <div className="px-2 space-y-3">
+                  <div className="px-4 pb-4 space-y-3">
                     <div className="flex justify-between text-sm text-muted-foreground">
                         <div className="flex items-center gap-2">
                             <Tag className="h-4 w-4"/>
