@@ -6,7 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
-import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag, PlusCircle, ScanLine } from 'lucide-react';
+import { Trash2, Edit, IndianRupee, Landmark, CreditCard, Wallet, Calendar, Tag, PlusCircle, ScanLine, ChevronDown } from 'lucide-react';
 import { format } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -15,6 +15,13 @@ import { ExpenseForm } from './ExpenseForm';
 import type { Expense } from '@/types';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import Link from 'next/link';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+
 
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -80,18 +87,29 @@ export function ExpenseList() {
         <div className="flex items-center justify-between">
           <CardTitle>Expense History</CardTitle>
           <div className="flex gap-2">
-            <Link href="/scan" passHref>
-              <Button>
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan Expenses
-              </Button>
-            </Link>
-            <Link href="/add-expense" passHref>
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                New Expense
-              </Button>
-            </Link>
+            <DropdownMenu>
+              <div className="flex items-center rounded-md border border-input">
+                <Link href="/add-expense" passHref>
+                  <Button variant="ghost" className="rounded-r-none border-r">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Expense
+                  </Button>
+                </Link>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-l-none">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </div>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                  <Link href="/scan" className="cursor-pointer">
+                    <ScanLine className="mr-2 h-4 w-4" />
+                    Scan Expenses
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
         <div className="mt-4 flex flex-col md:flex-row gap-4">

@@ -7,8 +7,16 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { RecentExpenses } from './RecentExpenses';
 import Link from 'next/link';
 import { Button } from './ui/button';
-import { PlusCircle, ScanLine } from 'lucide-react';
+import { PlusCircle, ScanLine, ChevronDown } from 'lucide-react';
 import { UpcomingReminders } from './UpcomingReminders';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from '@/components/ui/dropdown-menu';
+
 
 export function DashboardClient() {
   const { expenses, settings, categories, reminders, loading } = useExpenses();
@@ -40,18 +48,29 @@ export function DashboardClient() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         <div className="flex gap-2">
-          <Link href="/scan" passHref>
-            <Button>
-              <ScanLine className="mr-2 h-4 w-4" />
-              Scan Expenses
-            </Button>
-          </Link>
-          <Link href="/add-expense" passHref>
-            <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              New Expense
-            </Button>
-          </Link>
+            <DropdownMenu>
+              <div className="flex items-center rounded-md border border-input">
+                <Link href="/add-expense" passHref>
+                  <Button variant="ghost" className="rounded-r-none border-r">
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    New Expense
+                  </Button>
+                </Link>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-l-none">
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+              </div>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem asChild>
+                   <Link href="/scan" className="cursor-pointer">
+                    <ScanLine className="mr-2 h-4 w-4" />
+                    Scan Expenses
+                  </Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
         </div>
       </div>
       <SummaryCards expenses={expenses} />
