@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, List, Settings, Menu, BarChart, Loader2, Bell } from 'lucide-react';
+import { LayoutDashboard, List, Settings, Menu, BarChart, Loader2, Bell, ScanLine } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
@@ -13,6 +13,7 @@ import { Logo } from './Logo';
 const navItems = [
   { href: '/', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/expenses', label: 'Expenses', icon: List },
+  { href: '/scan', label: 'Scan', icon: ScanLine },
   { href: '/reports', label: 'Reports', icon: BarChart },
   { href: '/reminders', label: 'Reminders', icon: Bell },
   { href: '/settings', label: 'Settings', icon: Settings },
