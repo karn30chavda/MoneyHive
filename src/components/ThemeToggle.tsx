@@ -23,16 +23,9 @@ export function ThemeToggle() {
   };
 
   if (!mounted) {
-    // To prevent hydration mismatch, render a disabled button on the server
-    // and on the initial client render. The button will become interactive
-    // once the component has mounted.
-    return (
-      <Button variant="ghost" size="icon" disabled>
-        <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-        <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-        <span className="sr-only">Toggle theme</span>
-      </Button>
-    );
+    // To prevent hydration mismatch, render nothing on the server.
+    // The button will become interactive once the component has mounted on the client.
+    return null;
   }
 
   return (
