@@ -3,7 +3,7 @@ import { PT_Sans } from 'next/font/google';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { Navbar } from "@/components/Navbar";
-import { PwaSetup } from '@/components/PwaSetup';
+import { ClientOnlyPwaSetup } from '@/components/ClientOnlyPwaSetup';
 
 const ptSans = PT_Sans({
   subsets: ['latin'],
@@ -31,7 +31,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="apple-touch-icon" href="/icon.svg" />
-        <PwaSetup />
+        <ClientOnlyPwaSetup />
       </head>
       <body className={`${ptSans.variable} font-sans antialiased`}>
         <div className="flex min-h-screen w-full flex-col">
