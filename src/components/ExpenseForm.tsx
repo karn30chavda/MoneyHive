@@ -64,22 +64,21 @@ export function ExpenseForm({
   const [isDatePickerOpen, setDatePickerOpen] = useState(false);
 
   const defaultCategoryId = useMemo(() => {
+    if (categories.length === 0) return undefined;
     return categories.find(c => c.name === 'Miscellaneous')?.id ?? categories[0]?.id;
   }, [categories]);
 
-  const defaultValues = expenseToEdit
-    ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
-    : {
-        title: '',
-        amount: undefined,
-        date: new Date(),
-        paymentMode: 'Other' as PaymentMode,
-        categoryId: defaultCategoryId,
-      };
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: expenseToEdit
+      ? { ...expenseToEdit, date: new Date(expenseToEdit.date) }
+      : {
+          title: '',
+          amount: undefined,
+          date: new Date(),
+          paymentMode: 'Other',
+          categoryId: defaultCategoryId,
+        },
   });
 
   useEffect(() => {
@@ -92,12 +91,16 @@ export function ExpenseForm({
     } else {
         if (defaultCategoryId && !form.getValues('categoryId')) {
             form.reset({
-                ...defaultValues,
+                title: '',
+                amount: undefined,
+                date: new Date(),
+                paymentMode: 'Other',
                 categoryId: defaultCategoryId
             });
         }
     }
-  }, [expenseToEdit, form, defaultCategoryId, defaultValues]);
+  }, [expenseToEdit, form, defaultCategoryId, categories]);
+
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
@@ -106,14 +109,12 @@ export function ExpenseForm({
           ...values,
           id: expenseToEdit.id!,
           date: values.date.toISOString(),
-          categoryId: values.categoryId!,
         });
         toast({ title: 'Success', description: 'Expense updated successfully.' });
       } else {
         await addExpense({
           ...values,
           date: values.date.toISOString(),
-          categoryId: values.categoryId!,
         });
         toast({ title: 'Success', description: 'Expense added successfully.' });
       }
@@ -133,13 +134,22 @@ export function ExpenseForm({
 
   const handleAddCategory = async () => {
     if (newCategory.trim() !== '') {
-      await addCategory({ name: newCategory.trim() });
-      setNewCategory('');
-      setCategoryDialogOpen(false);
-      toast({
-        title: 'Success',
-        description: `Category "${newCategory}" added.`,
-      });
+      try {
+        const addedCategory = await addCategory({ name: newCategory.trim() });
+        form.setValue('categoryId', addedCategory.id);
+        setNewCategory('');
+        setCategoryDialogOpen(false);
+        toast({
+          title: 'Success',
+          description: `Category "${newCategory}" added.`,
+        });
+      } catch {
+        toast({
+            variant: 'destructive',
+            title: 'Error',
+            description: 'Failed to add category.',
+        });
+      }
     }
   };
 
@@ -232,6 +242,7 @@ export function ExpenseForm({
                   <Select
                     onValueChange={(val) => field.onChange(Number(val))}
                     value={field.value ? String(field.value) : undefined}
+                    disabled={categories.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger>

@@ -23,16 +23,19 @@ export function Navbar() {
   const [loadingPath, setLoadingPath] = useState<string | null>(null);
 
   useEffect(() => {
+    // This effect runs when the path changes, i.e., navigation is complete.
     if (loadingPath) {
       setLoadingPath(null);
     }
-  }, [pathname, loadingPath]);
+    // No dependency on loadingPath to avoid re-running when loadingPath is set.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname]);
 
   const handleLinkClick = (href: string) => {
     if (pathname !== href) {
       setLoadingPath(href);
     }
-    setSheetOpen(false);
+    setSheetOpen(false); // Always close sheet on navigation
   };
   
   const navLinks = (isMobile = false) => (
@@ -41,22 +44,20 @@ export function Navbar() {
       isMobile ? "flex flex-col gap-4 mt-8" : "hidden md:flex md:flex-row md:gap-5"
     )}>
       {navItems.map(({ href, label, icon: Icon }) => {
-        const isLoading = loadingPath === href;
-        const isCurrent = pathname === href;
+        const isLoading = loadingPath === href && pathname !== href;
+        const isCurrent = !isLoading && pathname === href;
         return (
           <Link
             key={href}
             href={href}
-            onClick={(e) => {
-              if (isCurrent) e.preventDefault();
-              handleLinkClick(href);
-            }}
+            onClick={() => handleLinkClick(href)}
             className={cn(
               'transition-colors hover:text-primary flex items-center gap-2',
-              isCurrent && !isLoading ? 'text-primary' : 'text-muted-foreground',
+              isCurrent ? 'text-primary' : 'text-muted-foreground',
               isLoading && 'pointer-events-none text-muted-foreground',
               isMobile && 'text-lg'
             )}
+            aria-current={isCurrent ? 'page' : undefined}
             aria-disabled={isLoading}
             tabIndex={isLoading ? -1 : undefined}
           >

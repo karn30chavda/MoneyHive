@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, IndianRupee, Bell, Calendar } from 'lucide-react';
-import { format, differenceInDays, isFuture } from 'date-fns';
+import { format, differenceInDays, isFuture, isToday } from 'date-fns';
 import type { Reminder } from '@/types';
 
 const formatCurrency = (amount: number) => {
@@ -39,7 +39,7 @@ export function UpcomingReminders({ reminders }: UpcomingRemindersProps) {
   const nextReminder = useMemo(() => {
     const futureReminders = reminders
       .map(r => ({...r, dueDateObj: new Date(r.dueDate)}))
-      .filter(r => isFuture(r.dueDateObj) || differenceInDays(r.dueDateObj, new Date()) === 0)
+      .filter(r => isFuture(r.dueDateObj) || isToday(r.dueDateObj))
       .sort((a, b) => a.dueDateObj.getTime() - b.dueDateObj.getTime());
     
     return futureReminders.length > 0 ? futureReminders[0] : null;

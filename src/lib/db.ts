@@ -51,11 +51,12 @@ async function getDb() {
       }
       if (!db.objectStoreNames.contains('categories')) {
         const categoryStore = db.createObjectStore('categories', { keyPath: 'id', autoIncrement: true });
+        // This runs only once when the store is created
         DEFAULT_CATEGORIES.forEach(category => categoryStore.add(category as Category));
       }
       if (!db.objectStoreNames.contains('settings')) {
-        const settingsStore = db.createObjectStore('settings', { keyPath: 'id', autoIncrement: true });
-        settingsStore.add({ monthlyBudget: 0, id: 1 });
+        const settingsStore = db.createObjectStore('settings', { keyPath: 'id' });
+        settingsStore.add({ monthlyBudget: 0 }, 1);
       }
       if (oldVersion < 2) { // Check if we need to add the reminders store
         if (!db.objectStoreNames.contains('reminders')) {
@@ -66,10 +67,20 @@ async function getDb() {
     },
   });
 
+  // Ensure default settings exist after DB connection is established
   const settings = await db.get('settings', 1);
   if (!settings) {
-    await db.add('settings', { monthlyBudget: 0, id: 1 });
+    await db.put('settings', { monthlyBudget: 0 }, 1);
   }
+
+  // Ensure default categories exist
+  const catCount = await db.count('categories');
+  if(catCount === 0) {
+      const tx = db.transaction('categories', 'readwrite');
+      await Promise.all(DEFAULT_CATEGORIES.map(cat => tx.store.add(cat as Category)));
+      await tx.done;
+  }
+
 
   return db;
 }
@@ -77,13 +88,14 @@ async function getDb() {
 // Expenses
 export const addExpense = async (expense: Omit<Expense, 'id'>) => {
   const db = await getDb();
-  await db.add('expenses', expense as Expense);
+  return db.add('expenses', expense as Expense);
 };
 
 export const addMultipleExpenses = async (expenses: Omit<Expense, 'id'>[]) => {
   const db = await getDb();
   const tx = db.transaction('expenses', 'readwrite');
-  await Promise.all([...expenses.map(exp => tx.store.add(exp as Expense)), tx.done]);
+  await Promise.all(expenses.map(exp => tx.store.add(exp as Expense)));
+  return tx.done;
 };
 
 export const getExpenses = async () => {
@@ -93,18 +105,19 @@ export const getExpenses = async () => {
 
 export const updateExpense = async (expense: Expense) => {
   const db = await getDb();
-  await db.put('expenses', expense);
+  return db.put('expenses', expense);
 };
 
 export const deleteExpense = async (id: number) => {
   const db = await getDb();
-  await db.delete('expenses', id);
+  return db.delete('expenses', id);
 };
 
 export const deleteMultipleExpenses = async (ids: number[]) => {
   const db = await getDb();
   const tx = db.transaction('expenses', 'readwrite');
-  await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
+  await Promise.all(ids.map(id => tx.store.delete(id)));
+  return tx.done;
 };
 
 export const getExpenseById = async (id: number) => {
@@ -114,13 +127,13 @@ export const getExpenseById = async (id: number) => {
 
 export const clearExpenses = async () => {
     const db = await getDb();
-    await db.clear('expenses');
+    return db.clear('expenses');
 }
 
 // Categories
 export const addCategory = async (category: Omit<Category, 'id'>) => {
   const db = await getDb();
-  await db.add('categories', category as Category);
+  return db.add('categories', category as Category);
 };
 
 export const getCategories = async () => {
@@ -130,7 +143,7 @@ export const getCategories = async () => {
 
 export const deleteCategory = async (id: number) => {
   const db = await getDb();
-  await db.delete('categories', id);
+  return db.delete('categories', id);
 };
 
 // Settings
@@ -142,13 +155,13 @@ export const getSettings = async (): Promise<Settings> => {
 
 export const saveSettings = async (settings: Settings) => {
   const db = await getDb();
-  await db.put('settings', { ...settings, id: 1 });
+  return db.put('settings', { ...settings, id: 1 });
 };
 
 // Reminders
 export const addReminder = async (reminder: Omit<Reminder, 'id'>) => {
   const db = await getDb();
-  await db.add('reminders', reminder as Reminder);
+  return db.add('reminders', reminder as Reminder);
 };
 
 export const getReminders = async (): Promise<Reminder[]> => {
@@ -158,13 +171,12 @@ export const getReminders = async (): Promise<Reminder[]> => {
 
 export const deleteReminder = async (id: number) => {
   const db = await getDb();
-  await db.delete('reminders', id);
+  return db.delete('reminders', id);
 };
 
 export const deleteMultipleReminders = async (ids: number[]) => {
     const db = await getDb();
     const tx = db.transaction('reminders', 'readwrite');
-    await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
-    // This function is called within a refresh cycle, so we don't call notifyDbUpdate()
-    // to avoid an infinite loop. The caller is responsible for refreshing state.
+    await Promise.all(ids.map(id => tx.store.delete(id)));
+    return tx.done;
 };
