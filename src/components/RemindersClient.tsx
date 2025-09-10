@@ -78,8 +78,8 @@ async function checkAndNotifyReminders(reminders: Reminder[]) {
       if (notificationBody) {
         registration.showNotification('Upcoming Expense Reminder', {
           body: notificationBody,
-          icon: '/icon-192x192.png',
-          badge: '/badge-72x72.png',
+          icon: '/logo.svg',
+          badge: '/logo.svg',
           tag: `reminder-${reminder.id}`,
           data: { url: '/reminders' },
         });
