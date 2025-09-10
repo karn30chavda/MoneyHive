@@ -63,6 +63,10 @@ export function useExpenses() {
     await db.deleteExpense(id);
   }, []);
 
+  const deleteMultipleExpenses = useCallback(async (ids: number[]) => {
+    await db.deleteMultipleExpenses(ids);
+  }, []);
+
   const clearExpenses = useCallback(async () => {
     await db.clearExpenses();
   }, []);
@@ -97,6 +101,7 @@ export function useExpenses() {
     addMultipleExpenses,
     updateExpense,
     deleteExpense,
+    deleteMultipleExpenses,
     getExpenseById: db.getExpenseById,
     clearExpenses,
     addCategory,

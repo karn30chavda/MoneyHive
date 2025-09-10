@@ -99,6 +99,13 @@ export const deleteExpense = async (id: number) => {
   notifyDbUpdate();
 };
 
+export const deleteMultipleExpenses = async (ids: number[]) => {
+  const db = await getDb();
+  const tx = db.transaction('expenses', 'readwrite');
+  await Promise.all([...ids.map(id => tx.store.delete(id)), tx.done]);
+  notifyDbUpdate();
+};
+
 export const getExpenseById = async (id: number) => {
   const db = await getDb();
   return db.get('expenses', id);
